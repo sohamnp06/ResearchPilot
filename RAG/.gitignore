@@ -1,0 +1,22 @@
+# Local virtual environment
+venv/
+.venv/
+
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment variables — NEVER commit this
+.env
+
+# Generated data directories
+data/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/

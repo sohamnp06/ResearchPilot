@@ -1,0 +1,62 @@
+# =======================
+# Python
+# =======================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# =======================
+# Environment & Secrets
+# =======================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# =======================
+# Logs
+# =======================
+*.log
+logs/
+
+# =======================
+# Data directories (large / generated)
+# =======================
+RAG/data/
+
+# =======================
+# IDEs & Editors
+# =======================
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# =======================
+# OS
+# =======================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =======================
+# pytest / coverage
+# =======================
+.pytest_cache/
+.coverage
+htmlcov/
