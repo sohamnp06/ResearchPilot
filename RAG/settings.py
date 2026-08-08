@@ -1,4 +1,13 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+# ResearchPilot/
+# ├── .env
+# └── RAG/
+#     └── settings.py
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
@@ -17,8 +26,9 @@ class Settings(BaseSettings):
     LOG_LEVEL: str
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        extra="ignore"
+        env_file=PROJECT_ROOT / ".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
 

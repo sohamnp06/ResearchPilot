@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-
-from paper_search.models import Paper
+from RAG.paper_search.models import Paper
 
 
 class BaseProvider(ABC):
