@@ -10,18 +10,38 @@ def main() -> None:
 
     extractor = PDFExtractor()
 
-    blocks = extractor.extract(pdf_path)
+    pages = extractor.extract(pdf_path)
 
-    print(f"Extracted blocks: {len(blocks)}")
+    total_blocks = sum(
+        len(page.blocks)
+        for page in pages
+    )
 
-    for block in blocks[:10]:
+    print(f"Pages: {len(pages)}")
+    print(f"Total blocks: {total_blocks}")
+
+    for page in pages[:1]:
         print()
-        print("Page:", block["page"])
-        print("Block:", block["block"])
-        print("Text:", block["text"])
-        print("BBox:", block["bbox"])
-        print("Font:", block["font"])
-        print("Font size:", block["font_size"])
+        print(f"Page {page.page_number}")
+        print(
+            f"Dimensions: "
+            f"{page.width:.2f} x {page.height:.2f}"
+        )
+
+        for block in page.blocks[:10]:
+            print()
+            print(
+                f"Block {block.block_number}"
+            )
+            print("Text:", block.text)
+            print("BBox:", block.bbox)
+
+            for span in block.spans[:3]:
+                print(
+                    f"  Span: {span.text!r} "
+                    f"| Font: {span.font} "
+                    f"| Size: {span.font_size}"
+                )
 
 
 if __name__ == "__main__":
