@@ -13,6 +13,7 @@ class ElementType(str, Enum):
     HEADING = "heading"
     TABLE = "table"
     FIGURE = "figure"
+    DIAGRAM = "diagram"
     CAPTION = "caption"
     CODE = "code"
     REFERENCE = "reference"
@@ -23,6 +24,9 @@ class ElementType(str, Enum):
 class DocumentElement:
     """
     Represents a classified element extracted from a PDF.
+
+    Metadata is preserved so downstream retrieval can
+    trace content back to its exact document location.
     """
 
     element_type: ElementType
