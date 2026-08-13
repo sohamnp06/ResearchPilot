@@ -13,8 +13,8 @@ class ElementFilter:
     Filters document elements according to their role
     in the retrieval pipeline.
 
-    Only meaningful research content is allowed into
-    semantic retrieval.
+    Only meaningful research-content elements are allowed
+    into semantic retrieval.
     """
 
     RETRIEVABLE_TYPES = {
@@ -29,6 +29,7 @@ class ElementFilter:
         ElementType.REFERENCE,
         ElementType.CAPTION,
         ElementType.UNKNOWN,
+        ElementType.HEADING,
     }
 
     PAGE_NUMBER_PATTERN = re.compile(
@@ -56,9 +57,16 @@ class ElementFilter:
         re.IGNORECASE,
     )
 
-    DIAGRAM_SYMBOL_PATTERN = re.compile(
-        r"^[^\w]{0,3}\w{0,2}[^\w]{0,3}$"
-    )
+    DIAGRAM_LABELS = {
+        "patch embedding",
+        "class prediction",
+        "transpose",
+        "feed-forward layer",
+        "feed forward layer",
+        "features",
+        "patches",
+        "attention",
+    }
 
     def filter_retrievable(
         self,
@@ -66,14 +74,15 @@ class ElementFilter:
         metadata=None,
     ) -> list[DocumentElement]:
         """
-        Return only clean research-content elements.
+        Return only clean research-content elements
+        suitable for semantic retrieval.
         """
 
         metadata_texts = self._get_metadata_texts(
             metadata
         )
 
-        retrievable = []
+        retrievable: list[DocumentElement] = []
 
         for element in elements:
 
@@ -106,7 +115,7 @@ class ElementFilter:
             if self._is_title_fragment(text):
                 continue
 
-            if self._is_diagram_symbol(text):
+            if self._is_diagram_label(text):
                 continue
 
             retrievable.append(element)
@@ -119,15 +128,15 @@ class ElementFilter:
         metadata=None,
     ) -> list[DocumentElement]:
         """
-        Return metadata and structural elements that
-        should not enter semantic retrieval.
+        Return document metadata and structural/noise
+        elements that should not enter retrieval.
         """
 
         metadata_texts = self._get_metadata_texts(
             metadata
         )
 
-        metadata_elements = []
+        metadata_elements: list[DocumentElement] = []
 
         for element in elements:
 
@@ -158,6 +167,10 @@ class ElementFilter:
 
             if self._is_title_fragment(text):
                 metadata_elements.append(element)
+                continue
+
+            if self._is_diagram_label(text):
+                metadata_elements.append(element)
 
         return metadata_elements
 
@@ -166,7 +179,8 @@ class ElementFilter:
         elements: list[DocumentElement],
     ) -> list[DocumentElement]:
         """
-        Return non-retrievable special elements.
+        Return special/non-retrievable elements such as
+        figures, tables, diagrams, references and code.
         """
 
         return [
@@ -182,8 +196,7 @@ class ElementFilter:
         metadata=None,
     ) -> list[DocumentElement]:
         """
-        Return clean elements suitable for semantic
-        chunking.
+        Return clean elements suitable for semantic chunking.
         """
 
         return self.filter_retrievable(
@@ -197,7 +210,7 @@ class ElementFilter:
     ) -> list[DocumentElement]:
         """
         Return figures, tables, diagrams, code,
-        references, captions, and unknown elements.
+        references, captions, headings and unknown elements.
         """
 
         return self.filter_excluded(
@@ -209,8 +222,8 @@ class ElementFilter:
         metadata,
     ) -> set[str]:
         """
-        Convert document metadata into a set of
-        strings that should not be retrieved.
+        Convert DocumentMetadata into a set of strings
+        that should never enter semantic retrieval.
         """
 
         if metadata is None:
@@ -309,8 +322,8 @@ class ElementFilter:
         text: str,
     ) -> bool:
         """
-        Detect title fragments that were extracted as
-        separate PDF blocks.
+        Detect title fragments extracted as separate
+        PDF blocks.
         """
 
         return bool(
@@ -319,25 +332,31 @@ class ElementFilter:
             )
         )
 
-    def _is_diagram_symbol(
+    def _is_diagram_label(
         self,
         text: str,
     ) -> bool:
         """
-        Detect very short isolated labels/symbols that
-        are likely diagram components.
+        Detect short labels that commonly belong to
+        diagrams rather than semantic document prose.
         """
 
-        normalized = text.strip()
+        normalized = " ".join(
+            text.strip().lower().split()
+        )
 
-        if normalized == "✕ N":
+        if not normalized:
+            return False
+
+        if normalized in self.DIAGRAM_LABELS:
             return True
 
-        if len(normalized) <= 3:
-            if not any(
-                character.isalpha()
-                for character in normalized
-            ):
-                return True
+        if normalized == "✕ n":
+            return True
+
+        # Very short labels are generally not useful
+        # as independent semantic retrieval units.
+        if len(normalized) <= 5:
+            return True
 
         return False

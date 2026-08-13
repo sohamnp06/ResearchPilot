@@ -10,8 +10,13 @@ from RAG.document.elements import (
 
 class LayoutClassifier:
     """
-    Classifies PDF text blocks into high-level document
-    element types using textual and structural signals.
+    Classifies PDF text blocks into semantic/layout
+    element types.
+
+    Textual and structural signals are used to classify
+    individual blocks. Table/figure region handling that
+    depends on neighboring blocks is performed by the
+    DocumentElementBuilder.
     """
 
     FIGURE_CAPTION_PATTERN = re.compile(
@@ -38,15 +43,14 @@ class LayoutClassifier:
         "torch.",
         "self.",
         "->",
-        "super().",
     )
 
     DIAGRAM_KEYWORDS = (
         "transpose",
-        "feed-forward layer (patches)",
-        "feed-forward layer (features)",
-        "patch embedding",
-        "class prediction",
+        "feed-forward layer",
+        "feed forward layer",
+        "patches",
+        "features",
     )
 
     def classify(
@@ -93,44 +97,28 @@ class LayoutClassifier:
         self,
         text: str,
     ) -> ElementType:
-        """
-        Determine the element type using a strict
-        classification hierarchy.
-        """
 
-        # 1. References
         if self._looks_like_reference(text):
             return ElementType.REFERENCE
 
-        # 2. Figure captions
         if self._looks_like_figure_caption(text):
             return ElementType.FIGURE
 
-        # 3. Table captions
         if self._looks_like_table_caption(text):
             return ElementType.TABLE
 
-        # 4. Code
         if self._looks_like_code(text):
             return ElementType.CODE
 
-        # 5. Diagram labels
         if self._looks_like_diagram(text):
             return ElementType.DIAGRAM
 
-        # 6. Everything else is normal document text.
         return ElementType.PARAGRAPH
 
     def _looks_like_figure_caption(
         self,
         text: str,
     ) -> bool:
-        """
-        Detect figure captions such as:
-
-        Figure 1: ...
-        Fig. 2: ...
-        """
 
         return bool(
             self.FIGURE_CAPTION_PATTERN.match(
@@ -142,12 +130,6 @@ class LayoutClassifier:
         self,
         text: str,
     ) -> bool:
-        """
-        Detect table captions such as:
-
-        Table 1: ...
-        Table 2. ...
-        """
 
         return bool(
             self.TABLE_CAPTION_PATTERN.match(
@@ -159,29 +141,17 @@ class LayoutClassifier:
         self,
         text: str,
     ) -> bool:
-        """
-        Detect bibliography entries beginning with:
-
-        [1]
-        [2]
-        [10]
-        """
 
         return bool(
-            self.REFERENCE_PATTERN.match(text)
+            self.REFERENCE_PATTERN.match(
+                text
+            )
         )
 
     def _looks_like_code(
         self,
         text: str,
     ) -> bool:
-        """
-        Detect actual code blocks.
-
-        A block must contain at least two independent
-        code-related signals before being classified
-        as CODE.
-        """
 
         lines = text.splitlines()
 
@@ -206,39 +176,33 @@ class LayoutClassifier:
         self,
         text: str,
     ) -> bool:
-        """
-        Detect short isolated architectural labels.
-
-        Normal research prose should never be classified
-        as a diagram merely because it contains words such
-        as 'features' or 'patches'.
-        """
 
         normalized = text.lower().strip()
 
-        if not normalized:
-            return False
+        if len(normalized) <= 25:
 
-        # Long text is almost certainly prose.
-        if len(normalized) > 80:
-            return False
-
-        # Do not classify complete sentences as diagrams.
-        if normalized.endswith(
-            (".", "?", "!")
-        ):
-            return False
-
-        for keyword in self.DIAGRAM_KEYWORDS:
-
-            if keyword in normalized:
+            if any(
+                keyword in normalized
+                for keyword in self.DIAGRAM_KEYWORDS
+            ):
                 return True
 
-        # Very short isolated symbols.
-        if len(normalized) <= 3:
+        keyword_count = sum(
+            keyword in normalized
+            for keyword in self.DIAGRAM_KEYWORDS
+        )
+
+        if keyword_count >= 1:
+
+            if not normalized.endswith(
+                (".", "?", "!")
+            ):
+                return True
+
+        if len(normalized) <= 5:
 
             if not any(
-                char.isalnum()
+                char.isalpha()
                 for char in normalized
             ):
                 return True
