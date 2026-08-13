@@ -10,25 +10,25 @@ from RAG.document.elements import (
 
 class LayoutClassifier:
     """
-    Classifies extracted PDF blocks into high-level
-    document element types.
+    Classifies PDF text blocks into high-level document
+    element types.
 
-    This is intentionally deterministic. The LLM is not
-    involved in document parsing.
+    Classification is deterministic and uses textual,
+    structural, and formatting signals.
     """
 
-    FIGURE_PATTERN = re.compile(
-        r"^\s*(figure|fig\.?)\s*\d+",
+    FIGURE_CAPTION_PATTERN = re.compile(
+        r"^\s*(figure|fig\.?)\s*\d+\s*[:.\-]",
         re.IGNORECASE,
     )
 
-    TABLE_PATTERN = re.compile(
-        r"^\s*table\s*\d+",
+    TABLE_CAPTION_PATTERN = re.compile(
+        r"^\s*table\s*\d+\s*[:.\-]",
         re.IGNORECASE,
     )
 
     REFERENCE_PATTERN = re.compile(
-        r"^\s*\[\s*\d+\s*\]",
+        r"^\s*\[\s*\d+\s*\]"
     )
 
     CODE_PATTERNS = (
@@ -56,7 +56,6 @@ class LayoutClassifier:
         clean_text = text.strip()
 
         if not clean_text:
-
             return DocumentElement(
                 element_type=ElementType.UNKNOWN,
                 text="",
@@ -67,10 +66,8 @@ class LayoutClassifier:
                 heading=heading,
             )
 
-        element_type = (
-            self._detect_type(
-                clean_text
-            )
+        element_type = self._detect_type(
+            clean_text
         )
 
         return DocumentElement(
@@ -88,46 +85,38 @@ class LayoutClassifier:
         text: str,
     ) -> ElementType:
 
-        if self._looks_like_reference(
-            text
-        ):
+        if self._looks_like_reference(text):
             return ElementType.REFERENCE
 
-        if self._looks_like_figure(
-            text
-        ):
+        if self._looks_like_figure_caption(text):
             return ElementType.FIGURE
 
-        if self._looks_like_table(
-            text
-        ):
+        if self._looks_like_table_caption(text):
             return ElementType.TABLE
 
-        if self._looks_like_code(
-            text
-        ):
+        if self._looks_like_code(text):
             return ElementType.CODE
 
         return ElementType.PARAGRAPH
 
-    def _looks_like_figure(
+    def _looks_like_figure_caption(
         self,
         text: str,
     ) -> bool:
 
         return bool(
-            self.FIGURE_PATTERN.match(
+            self.FIGURE_CAPTION_PATTERN.match(
                 text
             )
         )
 
-    def _looks_like_table(
+    def _looks_like_table_caption(
         self,
         text: str,
     ) -> bool:
 
         return bool(
-            self.TABLE_PATTERN.match(
+            self.TABLE_CAPTION_PATTERN.match(
                 text
             )
         )
@@ -156,13 +145,10 @@ class LayoutClassifier:
         code_signal_count = 0
 
         for line in lines:
-
             stripped = line.strip()
 
             for pattern in self.CODE_PATTERNS:
-
                 if pattern in stripped:
-
                     code_signal_count += 1
                     break
 
