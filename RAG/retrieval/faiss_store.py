@@ -227,8 +227,17 @@ class FAISSStore:
         if section is None:
             return None
 
-        if hasattr(section, "title"):
-            return str(section.title)
+        if isinstance(section, str):
+            return section
+
+        title = getattr(
+            section,
+            "title",
+            None,
+        )
+
+        if title is not None:
+            return str(title)
 
         return str(section)
 
