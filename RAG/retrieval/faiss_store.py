@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import faiss
 import numpy as np
@@ -24,13 +25,9 @@ class FAISSStore:
     """
     FAISS-based vector store for semantic retrieval.
 
-    The store keeps:
+    Stores:
         - FAISS vector index
-        - chunk metadata
-
-    Vectors are normalized and searched using
-    inner-product similarity, which is equivalent
-    to cosine similarity for normalized embeddings.
+        - document chunk metadata
     """
 
     def __init__(
@@ -51,14 +48,18 @@ class FAISSStore:
 
         self.chunks: list = []
 
+    # ==================================================
+    # ADD VECTORS
+    # ==================================================
+
     def add(
         self,
         embeddings: np.ndarray,
         chunks: list,
     ) -> None:
         """
-        Add chunk embeddings and their corresponding
-        chunk objects to the FAISS index.
+        Add embeddings and corresponding chunks
+        to the FAISS index.
         """
 
         if len(embeddings) == 0:
@@ -92,6 +93,10 @@ class FAISSStore:
         self.index.add(vectors)
 
         self.chunks.extend(chunks)
+
+    # ==================================================
+    # SEARCH
+    # ==================================================
 
     def search(
         self,
@@ -179,18 +184,170 @@ class FAISSStore:
 
         return results
 
+    # ==================================================
+    # SIZE
+    # ==================================================
+
     def size(self) -> int:
         """
-        Return the number of vectors currently stored.
+        Return the number of indexed vectors.
         """
 
         return self.index.ntotal
+
+    # ==================================================
+    # SAVE
+    # ==================================================
+
+    def save(
+        self,
+        directory: str | Path,
+    ) -> None:
+        """
+        Save the FAISS index and chunk metadata.
+
+        Files created:
+
+            directory/
+                index.faiss
+                chunks.npz
+        """
+
+        directory = Path(directory)
+
+        directory.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        index_path = (
+            directory / "index.faiss"
+        )
+
+        chunks_path = (
+            directory / "chunks.npz"
+        )
+
+        faiss.write_index(
+            self.index,
+            str(index_path),
+        )
+
+        metadata = []
+
+        for index, chunk in enumerate(
+            self.chunks
+        ):
+
+            metadata.append(
+                {
+                    "index": index,
+                    "chunk_id": self._get_chunk_id(
+                        chunk,
+                        index,
+                    ),
+                    "text": self._get_chunk_text(
+                        chunk
+                    ),
+                    "section": self._get_chunk_section(
+                        chunk
+                    ),
+                    "page_start": self._get_page_start(
+                        chunk
+                    ),
+                    "page_end": self._get_page_end(
+                        chunk
+                    ),
+                }
+            )
+
+        np.savez(
+            chunks_path,
+            metadata=np.array(
+                metadata,
+                dtype=object,
+            ),
+        )
+
+    # ==================================================
+    # LOAD
+    # ==================================================
+
+    @classmethod
+    def load(
+        cls,
+        directory: str | Path,
+    ) -> "FAISSStore":
+        """
+        Load a previously saved FAISS index.
+
+        The loaded store contains SearchResult-compatible
+        metadata for every indexed vector.
+        """
+
+        directory = Path(directory)
+
+        index_path = (
+            directory / "index.faiss"
+        )
+
+        chunks_path = (
+            directory / "chunks.npz"
+        )
+
+        if not index_path.exists():
+            raise FileNotFoundError(
+                f"FAISS index not found: "
+                f"{index_path}"
+            )
+
+        if not chunks_path.exists():
+            raise FileNotFoundError(
+                f"Chunk metadata not found: "
+                f"{chunks_path}"
+            )
+
+        index = faiss.read_index(
+            str(index_path)
+        )
+
+        data = np.load(
+            chunks_path,
+            allow_pickle=True,
+        )
+
+        metadata = data["metadata"]
+
+        store = cls(
+            dimension=index.d
+        )
+
+        store.index = index
+
+        store.chunks = list(
+            metadata
+        )
+
+        return store
+
+    # ==================================================
+    # CHUNK HELPERS
+    # ==================================================
 
     def _get_chunk_id(
         self,
         chunk,
         index_id: int,
     ) -> str:
+
+        if isinstance(chunk, dict):
+
+            return str(
+                chunk.get(
+                    "chunk_id",
+                    f"chunk_{index_id:05d}",
+                )
+            )
 
         return str(
             getattr(
@@ -205,6 +362,15 @@ class FAISSStore:
         chunk,
     ) -> str:
 
+        if isinstance(chunk, dict):
+
+            return str(
+                chunk.get(
+                    "text",
+                    "",
+                )
+            )
+
         return str(
             getattr(
                 chunk,
@@ -218,11 +384,19 @@ class FAISSStore:
         chunk,
     ) -> str | None:
 
-        section = getattr(
-            chunk,
-            "section",
-            None,
-        )
+        if isinstance(chunk, dict):
+
+            section = chunk.get(
+                "section"
+            )
+
+        else:
+
+            section = getattr(
+                chunk,
+                "section",
+                None,
+            )
 
         if section is None:
             return None
@@ -245,6 +419,17 @@ class FAISSStore:
         self,
         chunk,
     ) -> int | None:
+
+        if isinstance(chunk, dict):
+
+            value = chunk.get(
+                "page_start"
+            )
+
+            if value is not None:
+                return int(value)
+
+            return None
 
         value = getattr(
             chunk,
@@ -270,6 +455,17 @@ class FAISSStore:
         self,
         chunk,
     ) -> int | None:
+
+        if isinstance(chunk, dict):
+
+            value = chunk.get(
+                "page_end"
+            )
+
+            if value is not None:
+                return int(value)
+
+            return None
 
         value = getattr(
             chunk,

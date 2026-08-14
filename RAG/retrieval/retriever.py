@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from RAG.retrieval.faiss_store import (
     FAISSStore,
     SearchResult,
@@ -35,6 +37,10 @@ class Retriever:
             dimension=embedding_model.dimension
         )
 
+    # ==================================================
+    # INDEX
+    # ==================================================
+
     def index_chunks(
         self,
         chunks: list,
@@ -67,6 +73,10 @@ class Retriever:
             chunks,
         )
 
+    # ==================================================
+    # SEARCH
+    # ==================================================
+
     def search(
         self,
         query: str,
@@ -93,6 +103,10 @@ class Retriever:
             top_k=top_k,
         )
 
+    # ==================================================
+    # SIZE
+    # ==================================================
+
     def size(self) -> int:
         """
         Return the number of indexed chunks.
@@ -100,15 +114,50 @@ class Retriever:
 
         return self.store.size()
 
+    # ==================================================
+    # SAVE
+    # ==================================================
+
+    def save(
+        self,
+        directory: str | Path,
+    ) -> None:
+        """
+        Save the FAISS index and chunk metadata.
+        """
+
+        self.store.save(
+            directory
+        )
+
+    # ==================================================
+    # LOAD
+    # ==================================================
+
+    def load(
+        self,
+        directory: str | Path,
+    ) -> None:
+        """
+        Load a previously saved FAISS index.
+        """
+
+        self.store = (
+            FAISSStore.load(
+                directory
+            )
+        )
+
+    # ==================================================
+    # CHUNK TEXT
+    # ==================================================
+
     def _get_chunk_text(
         self,
         chunk,
     ) -> str:
         """
         Extract text from a chunk.
-
-        The current chunk generator should expose
-        chunk.text.
         """
 
         text = getattr(
@@ -118,13 +167,28 @@ class Retriever:
         )
 
         if text is None:
+
+            if isinstance(
+                chunk,
+                dict,
+            ):
+                text = chunk.get(
+                    "text"
+                )
+
+        if text is None:
+
             raise ValueError(
-                "Chunk does not contain a text field."
+                "Chunk does not contain "
+                "a text field."
             )
 
-        text = str(text).strip()
+        text = str(
+            text
+        ).strip()
 
         if not text:
+
             raise ValueError(
                 "Chunk contains empty text."
             )
