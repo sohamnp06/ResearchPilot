@@ -81,15 +81,43 @@ class Retriever:
         self,
         query: str,
         top_k: int = 5,
+        score_threshold: float | None = None,
     ) -> list[SearchResult]:
         """
         Convert a user query into an embedding
         and search the FAISS index.
+
+        Parameters
+        ----------
+        query:
+            Natural-language user query.
+
+        top_k:
+            Maximum number of results to return.
+
+        score_threshold:
+            Optional minimum cosine-similarity score.
+
+            Results below this score are discarded.
         """
 
         if not query.strip():
             raise ValueError(
                 "Query cannot be empty."
+            )
+
+        if top_k <= 0:
+            raise ValueError(
+                "top_k must be greater than zero."
+            )
+
+        if (
+            score_threshold is not None
+            and not -1.0 <= score_threshold <= 1.0
+        ):
+            raise ValueError(
+                "score_threshold must be between "
+                "-1.0 and 1.0."
             )
 
         query_embedding = (
@@ -101,6 +129,7 @@ class Retriever:
         return self.store.search(
             query_embedding,
             top_k=top_k,
+            score_threshold=score_threshold,
         )
 
     # ==================================================
@@ -158,6 +187,11 @@ class Retriever:
     ) -> str:
         """
         Extract text from a chunk.
+
+        Supports both:
+
+            - SemanticChunk objects
+            - dictionaries
         """
 
         text = getattr(
@@ -172,6 +206,7 @@ class Retriever:
                 chunk,
                 dict,
             ):
+
                 text = chunk.get(
                     "text"
                 )
