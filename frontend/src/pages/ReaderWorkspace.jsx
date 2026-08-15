@@ -78,7 +78,6 @@ function ReaderWorkspace() {
                 </section>
 
                 <section className="notes-panel">
-                    <h2>NOTES</h2>
                     <textarea
                         className="notes-editor"
                         value={notes}

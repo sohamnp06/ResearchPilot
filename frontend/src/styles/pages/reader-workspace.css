@@ -37,7 +37,7 @@
 /* PDF SIDE */
 
 .pdf-panel {
-    padding: 30px 36px;
+    padding: 0px 36px;
 
    border-right: 1px solid #000;
 
@@ -76,22 +76,11 @@
     box-sizing: border-box;
 }
 
-
-.notes-panel h2 {
-    margin: 0 0 30px;
-
-    font-family: "Lexend Exa", sans-serif;
-    font-size: 18px;
-    font-weight: 400;
-    letter-spacing: .08em;
-}
-
-
 /* NOTES EDITOR */
 
 .notes-editor {
     width: 100%;
-    height: calc(100% - 48px);
+    height: 100%;
 
     resize: none;
 
