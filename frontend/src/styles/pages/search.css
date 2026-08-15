@@ -1,25 +1,98 @@
-.search-page{
-
-    width:min(1100px,88vw);
-
-    margin:auto;
-
-    padding:36px 0 80px;
-
+.search-page {
+    width: min(1100px, 88vw);
+    margin: auto;
+    padding: 36px 0 80px;
 }
 
-.search-header{
+.search-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-    display:flex;
+    margin-top: 60px;
+    padding-bottom: 20px;
 
-    justify-content:space-between;
+    border-bottom: 1px solid #000;
+}
 
-    align-items:center;
+/* SEARCH STATUS */
 
-    margin-top:60px;
+.search-status {
+    margin-top: 56px;
+    margin-bottom: 48px;
+}
 
-    padding-bottom:20px;
+.search-status h1 {
+    margin: 0 0 10px;
 
-    border-bottom:1px solid #000;
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+}
 
+.search-status p {
+    margin: 0;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+
+    color: #E63939;
+}
+
+/* SEARCHING ANIMATION */
+
+.search-dots {
+    display: inline-block;
+    width: 24px;
+    text-align: left;
+}
+
+.is-loading .search-dots {
+    animation: search-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes search-dots {
+    0% {
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    75% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* RESULTS */
+
+.is-loaded {
+    animation: results-enter 0.35s ease-out;
+}
+
+.paper-list {
+    animation: results-enter 0.4s ease-out;
+}
+
+@keyframes results-enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

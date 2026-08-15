@@ -4,7 +4,7 @@
     align-items: center;
     width: 100%;
 }
-    
+   
 .logo {
     display: flex;
     align-items: center;
@@ -74,38 +74,31 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     min-width: 124px;
-    min-height: 54px;
+    min-height: 48px;
     padding: 0.65rem 1.2rem;
-    border: 2px solid #000;
-    background: #FFF6EA;
-    color: #000;
-    box-shadow: 4px 4px 0 #000;
-    font-family: "Instrument Serif", serif;
-    font-size: 30px;
-    line-height: 1;
+
+    border: 2px solid #E63939;
+    background: transparent;
+    color: #E63939;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 13px;
     font-weight: 400;
-    letter-spacing: 0.02em;
+    line-height: 1;
+    letter-spacing: 0.08em;
     text-decoration: none;
+
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
 }
 
 .auth-button:hover,
 .logout-button:hover {
-    transform: translate(-1px, -1px);
-    box-shadow: 5px 5px 0 #000;
-    filter: brightness(0.98);
-}
-
-.auth-button-dark,
-.logout-button {
-    background: #FFF6EA;
-    color: #000;
-}
-
-.logout-button {
-    font-family: "Instrument Serif", serif;
-    font-size: 30px;
-    min-height: 54px;
+    background: #000;
+    color: #E63939;
 }

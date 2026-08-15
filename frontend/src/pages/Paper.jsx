@@ -53,13 +53,9 @@ function Paper() {
                 <BackButton />
 
                 <div className="paper-actions">
-                    <span>PAPER ID : {paper.id}</span>
-
-                    <div className="paper-action-buttons">
-                        <button onClick={handleAddToLibrary}>ADD TO LIBRARY</button>
-                        <button onClick={() => navigate(`/reader/${paper.id}`)}>READ PAPER</button>
-                        <button onClick={() => navigate("/workspace")}>OPEN WORKSPACE</button>
-                    </div>
+                    <button className="paper-action-button" onClick={handleAddToLibrary}>ADD TO LIBRARY</button>
+                    <button className="paper-action-button" onClick={() => navigate(`/reader/${paper.id}`)}>READ PAPER</button>
+                    <button className="paper-action-button" onClick={() => navigate("/workspace")}>OPEN WORKSPACE</button>
                 </div>
             </div>
 

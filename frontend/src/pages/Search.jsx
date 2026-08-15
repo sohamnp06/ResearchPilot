@@ -1,14 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar/Navbar";
 import BackButton from "../components/BackButton/BackButton";
 import SortBar from "../components/SortBar/SortBar";
-import SearchStatus from "../components/SearchStatus/SearchStatus";
 import PaperList from "../components/PaperList/PaperList";
+import { searchPapers } from "../lib/api";
 
 import "../styles/pages/search.css";
 
 function Search() {
-    const [query, setQuery] = useState("transformer");
+    const [query] = useState("transformer");
+    const [papers,setPapers] = useState([]);
+    const [loading,setLoading] = useState(true);
+
+    useEffect(() => {
+        let isMounted = true;
+
+            async function load(){
+                setLoading(true);
+
+                try {
+                    const results = await searchPapers(query);
+
+                    if(isMounted){
+                        setPapers(results);
+                    }
+                } catch (error) {
+                    console.error(error);
+
+                    if(isMounted){
+                        setPapers([]);
+                    }
+                }finally{
+                    if(isMounted){
+                        setLoading(false);
+                    }
+                }
+            }
+
+            load();
+
+            return () => {isMounted = false};
+
+        }
+    ,[query]);
 
     return (
         <main className="search-page">
@@ -19,24 +53,22 @@ function Search() {
                 <SortBar />
             </div>
 
-            <SearchStatus count={0} />
+            <section className={`search-status ${loading ? "is-loading" : "is-loaded"}`}>
+                {loading ? (
+                    <>
+                        <h1>SEARCHING ARCHIVE<span className="search-dots">...</span></h1>
+                        <p>SEARCHING</p>
+                    </>
+                ) : (
+                    <>
+                        <h1>ARCHIVE RESULTS</h1>
+                        <p>{papers.length} PAPERS FOUND</p>
+                    </>
+                )}
+            </section>
 
-            <div style={{ padding: "0 1rem 1rem" }}>
-                <input
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search papers"
-                    style={{
-                        width: "100%",
-                        padding: "0.9rem 1rem",
-                        borderRadius: "10px",
-                        border: "1px solid #d0d7de",
-                        fontSize: "1rem",
-                    }}
-                />
-            </div>
-
-            <PaperList query={query} />
+            {!loading && <PaperList papers={papers} />}
+            
         </main>
     );
 }
