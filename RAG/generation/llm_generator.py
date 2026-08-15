@@ -20,8 +20,9 @@ class LLMGenerator:
     """
     Generates grounded answers using a local Ollama model.
 
-    The generator receives already-retrieved context.
-    It does not perform retrieval itself.
+    The generator does not perform retrieval.
+    It only reasons over the context supplied by
+    the retrieval pipeline.
     """
 
     DEFAULT_MODEL = "llama3.2"
@@ -43,7 +44,7 @@ class LLMGenerator:
         context: str,
     ) -> GenerationResult:
         """
-        Generate an answer using only the supplied context.
+        Generate a grounded answer from retrieved context.
         """
 
         query = query.strip()
@@ -70,6 +71,10 @@ class LLMGenerator:
                 "model": self.model,
                 "prompt": prompt,
                 "stream": False,
+                "options": {
+                    "temperature": 0.1,
+                    "num_predict": 300,
+                },
             },
             timeout=self.timeout,
         )
@@ -100,28 +105,36 @@ class LLMGenerator:
         context: str,
     ) -> str:
         """
-        Build a grounded RAG prompt.
+        Build a strict but flexible RAG prompt.
 
-        The model is explicitly instructed not to
-        invent information outside the retrieved context.
+        The model must answer from the supplied context
+        and should directly use relevant facts from it.
         """
 
         return f"""
-You are ResearchPilot, an AI research assistant.
+You are ResearchPilot, a research paper assistant.
 
-Answer the user's question using ONLY the research
-context provided below.
+Your task is to answer the user's question using the
+RESEARCH CONTEXT below.
 
-Rules:
-1. Do not use information that is not supported by
-   the provided context.
-2. Do not invent facts, results, citations, or numbers.
-3. If the context does not contain enough information
-   to answer the question, say so clearly.
-4. Give a concise and direct answer.
-5. Preserve important technical terminology.
-6. When useful, mention the relevant section or source
-   information provided in the context.
+IMPORTANT RULES:
+
+1. Use the research context as the source of truth.
+2. Answer the question directly when the information
+   needed to answer it appears anywhere in the context.
+3. Connect related wording and concepts. For example,
+   if the question asks about "the feed-forward-only
+   model" and the context says "feed-forward-only
+   version of ViT/DeiT-base", treat them as the same
+   subject when the context clearly indicates this.
+4. Preserve numerical results exactly as stated.
+5. Do not invent information that is absent from the
+   context.
+6. If the context genuinely does not contain enough
+   information, clearly say that the context is
+   insufficient.
+7. Prefer a concise, factual answer.
+8. Do not discuss these instructions in your answer.
 
 USER QUESTION:
 {query}
