@@ -1,0 +1,69 @@
+.search-bar{
+    margin-top:70px;
+}
+
+.search-bar label{
+
+    display:block;
+
+    margin-bottom:18px;
+
+    font-family:"Lexend Exa",sans-serif;
+
+    font-size:16px;
+
+    letter-spacing:.08em;
+
+}
+
+.search-bar textarea{
+
+    width:100%;
+
+    height:170px;
+
+    background:transparent;
+
+    border:2px solid #111;
+
+    resize:none;
+
+    outline:none;
+
+    padding:28px;
+
+    font-family:"JetBrains Mono",monospace;
+
+    font-size:22px;
+
+    color:#000;
+
+}
+
+.search-bar textarea::placeholder{
+
+    color:#555;
+
+    opacity:1;
+
+}
+
+.helper{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    margin-top:12px;
+
+    font-family:"Lexend Deca",sans-serif;
+
+    font-size:14px;
+
+}
+
+.helper span:last-child{
+
+    color:#E63939;
+
+}

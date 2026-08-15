@@ -1,0 +1,65 @@
+.nav{
+    display:flex;
+    justify-content:space-between;
+    align-items: center;
+    width: 100%;
+}
+    
+.logo {
+    font-family: "Instrument Serif", serif;
+
+    font-size: 52px;
+    font-weight: 400;
+    line-height: 0.85;
+    letter-spacing: -2px;
+
+    color: #000;
+    text-decoration: none;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+.nav-links{
+    display: flex;
+    align-items: center;
+
+    gap: 48px;
+    margin-top: 8px;
+}
+
+.nav-links a{
+    text-decoration:none;
+    color:black;
+    font-family:"Lexend Exa",sans-serif;
+    font-size:15px;
+    letter-spacing:.08em;
+    transition: color 0.2s ease;
+    position:relative;  
+}
+
+.nav-links a::after{
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    bottom:-8px;
+
+    width:0;
+
+    height:2px;
+
+    background:#E63939;
+
+    transition: width .25s ease;
+}
+
+.nav-links a:hover{
+    color: #E63939;
+}
+
+.nav-links a:hover::after{
+    width: 100%;
+}

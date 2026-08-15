@@ -1,0 +1,65 @@
+.hero{
+
+    display:grid;
+
+    grid-template-columns: 2fr 1fr;
+
+    align-items:start;
+
+    margin-top:5rem;
+
+}
+
+.hero h1{
+
+    font-family:var(--instrument);
+
+    font-size:clamp(6rem,8vw,9rem);
+
+    font-weight:400;
+
+    line-height:.9;
+
+}
+
+.hero-left p{
+
+    margin-top:2.5rem;
+
+    font-family:var(--lexend-exa);
+
+    font-size: 1rem;
+
+    letter-spacing:.12em;
+
+}
+
+.hero-left span{
+
+    color:var(--red);
+
+    margin-right:1rem;
+
+}
+
+.hero-right{
+
+    display: flex;
+
+    justify-content: flex-end;
+
+}
+
+.hero-right p{
+
+    border-left: 2px solid var(--red);
+
+    padding-left: 1.5rem;
+
+    font-family: var(--lexend-exa);
+
+    line-height: 1.8;
+
+    text-transform: uppercase;
+
+}

@@ -1,0 +1,67 @@
+.pdf-viewer {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    min-height: 0;
+
+    border: 1px solid #000;
+    box-sizing: border-box;
+}
+
+
+/* TOOLBAR */
+
+.pdf-toolbar {
+    flex: 0 0 auto;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px 14px;
+
+    border-bottom: 1px solid #000;
+}
+
+.pdf-page-count {
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+}
+
+.pdf-scroll-hint {
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 16px;
+}
+
+
+/* DOCUMENT */
+
+.pdf-document {
+    flex: 1;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 24px;
+
+    box-sizing: border-box;
+}
+
+
+/* EACH PAGE */
+
+.pdf-document .react-pdf__Page {
+    margin: 0 auto 24px;
+}
+
+.pdf-document canvas {
+    display: block;
+}
