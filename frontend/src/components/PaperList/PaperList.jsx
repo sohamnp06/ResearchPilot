@@ -1,44 +1,48 @@
+import { useEffect, useState } from "react";
 import PaperCard from "../PaperCard/PaperCard";
+import { searchPapers } from "../../lib/api";
 import "./PaperList.css";
 
-function PaperList() {
+function PaperList({ query = "transformer" }) {
+    const [papers, setPapers] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const papers = [
-        {
-            id: "001",
-            title: "Attention Is All You Need",
-            year: "2017",
-            source: "arXiv",
-        },
-        {
-            id: "002",
-            title: "Pre-Training of Deep Bidirectional Transformers",
-            year: "2018",
-            source: "Google",
-        },
-        {
-            id: "003",
-            title: "Graph Neural Networks",
-            year: "2020",
-            source: "IEEE",
-        },
-    ];
+    useEffect(() => {
+        let isMounted = true;
+
+        async function load() {
+            try {
+                const results = await searchPapers(query);
+                if (isMounted) setPapers(results);
+            } catch (error) {
+                console.error(error);
+                if (isMounted) setPapers([]);
+            } finally {
+                if (isMounted) setLoading(false);
+            }
+        }
+
+        load();
+        return () => {
+            isMounted = false;
+        };
+    }, [query]);
+
+    if (loading) {
+        return <section className="paper-list"><p>Loading papers...</p></section>;
+    }
+
+    if (!papers.length) {
+        return <section className="paper-list"><p>No papers found.</p></section>;
+    }
 
     return (
-
         <section className="paper-list">
-
             {papers.map((paper) => (
-                <PaperCard
-                    key={paper.id}
-                    paper={paper}
-                />
+                <PaperCard key={paper.id} paper={paper} />
             ))}
-
         </section>
-
     );
-
 }
 
 export default PaperList;
