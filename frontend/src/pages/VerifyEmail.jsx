@@ -41,47 +41,55 @@ function VerifyEmail() {
   };
 
   return (
-    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#0f172a", color: "#fff" }}>
-      <div style={{ width: "100%", maxWidth: "430px", background: "#111827", padding: "2rem", borderRadius: "16px", boxShadow: "0 12px 32px rgba(0,0,0,0.25)" }}>
-        <h1 style={{ marginBottom: "1rem", textAlign: "center" }}>Verify email</h1>
+    <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#FFF6EA", color: "#000" }}>
+      <div style={{ width: "100%", maxWidth: "520px", background: "#FFF6EA", border: "2px solid #000", padding: "2rem 2rem 1.4rem", boxShadow: "8px 8px 0 #000" }}>
+        <h1 style={{ margin: "0 0 1.5rem", textAlign: "center", fontFamily: '"Instrument Serif", serif', fontSize: "64px", fontWeight: 400, lineHeight: 1, letterSpacing: "-0.04em" }}>
+          VERIFY EMAIL
+        </h1>
 
         <form onSubmit={handleVerify} style={{ display: "grid", gap: "1rem" }}>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="Enter your email"
-            required
-            style={{ padding: "0.9rem 1rem", borderRadius: "10px", border: "1px solid #374151", background: "#1f2937", color: "#fff" }}
-          />
+          <div style={{ display: "grid", gap: "0.5rem" }}>
+            <label style={{ fontFamily: '"Lexend Exa", sans-serif', fontSize: "12px", letterSpacing: ".12em", textTransform: "uppercase" }}>EMAIL</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@example.com"
+              required
+              style={{ padding: "0.9rem 1rem", border: "2px solid #000", background: "#FFF6EA", color: "#000", fontFamily: '"JetBrains Mono", monospace', fontSize: "16px", outline: "none" }}
+            />
+          </div>
 
-          <input
-            type="text"
-            value={code}
-            onChange={(event) => setCode(event.target.value)}
-            placeholder="6-digit verification code"
-            required
-            style={{ padding: "0.9rem 1rem", borderRadius: "10px", border: "1px solid #374151", background: "#1f2937", color: "#fff" }}
-          />
+          <div style={{ display: "grid", gap: "0.5rem" }}>
+            <label style={{ fontFamily: '"Lexend Exa", sans-serif', fontSize: "12px", letterSpacing: ".12em", textTransform: "uppercase" }}>VERIFICATION CODE</label>
+            <input
+              type="text"
+              value={code}
+              onChange={(event) => setCode(event.target.value)}
+              placeholder="6-digit verification code"
+              required
+              style={{ padding: "0.9rem 1rem", border: "2px solid #000", background: "#FFF6EA", color: "#000", fontFamily: '"JetBrains Mono", monospace', fontSize: "16px", outline: "none" }}
+            />
+          </div>
 
-          {message && <div style={{ color: "#86efac" }}>{message}</div>}
-          {error && <div style={{ color: "#fca5a5" }}>{error}</div>}
+          {message && <div style={{ color: "#166534", fontSize: "0.9rem", fontFamily: '"Lexend Exa", sans-serif' }}>{message}</div>}
+          {error && <div style={{ color: "#B91C1C", fontSize: "0.9rem", fontFamily: '"Lexend Exa", sans-serif' }}>{error}</div>}
 
           <button
             type="submit"
             disabled={loading}
-            style={{ padding: "0.9rem 1rem", borderRadius: "10px", border: "none", background: "#38bdf8", color: "#082f49", fontWeight: 700, cursor: "pointer" }}
+            style={{ padding: "0.9rem 1rem", border: "2px solid #000", background: "#111827", color: "#fff", fontFamily: '"Lexend Exa", sans-serif', fontSize: "18px", letterSpacing: ".08em", cursor: "pointer", boxShadow: "4px 4px 0 #000" }}
           >
-            {loading ? "Verifying..." : "Verify email"}
+            {loading ? "VERIFYING..." : "VERIFY EMAIL"}
           </button>
         </form>
 
         <button
           type="button"
           onClick={handleResend}
-          style={{ marginTop: "1rem", width: "100%", padding: "0.8rem 1rem", borderRadius: "10px", border: "1px solid #374151", background: "transparent", color: "#fff", cursor: "pointer" }}
+          style={{ marginTop: "1rem", width: "100%", padding: "0.9rem 1rem", border: "2px solid #000", background: "#FFF6EA", color: "#000", fontFamily: '"Lexend Exa", sans-serif', fontSize: "16px", letterSpacing: ".08em", cursor: "pointer", boxShadow: "4px 4px 0 #000" }}
         >
-          Resend OTP
+          RESEND OTP
         </button>
       </div>
     </main>
