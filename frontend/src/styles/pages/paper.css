@@ -1,0 +1,312 @@
+.paper-page {
+    width: min(1100px, 88vw);
+    margin: auto;
+    padding: 36px 0 80px;
+}
+
+
+/* -------------------------------- */
+/* TOP TOOLBAR */
+/* -------------------------------- */
+
+.paper-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    margin-top: 60px;
+    padding-bottom: 18px;
+
+    border-bottom: 1px solid #000;
+}
+
+.paper-actions {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+}
+
+.paper-actions button {
+    /* background: transparent;
+
+    border: 1px solid #E63939;
+
+    color: #E63939;
+
+    padding: 10px 14px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 13px;
+
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+
+    transition: 0.2s ease; */
+
+    display:flex;
+    gap:10px;
+}
+
+.paper-actions-buttons button{
+    background: transparent;
+    border: 1px solid #E63939;
+    color: #E63939;
+    padding:10px 14px;
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 11px;
+
+    letter-spacing: 0.06em;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+.paper-actions-buttons button:hover {
+    background: #E63939;
+    color: #fff;
+}
+
+/* -------------------------------- */
+/* MAIN PAPER LAYOUT */
+/* -------------------------------- */
+
+.paper-layout {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    min-height: 780px;
+}
+
+
+/* -------------------------------- */
+/* LEFT INFORMATION */
+/* -------------------------------- */
+
+.paper-info {
+    padding: 32px 48px 40px 0;
+
+    border-right: 1px solid #000;
+}
+
+.paper-number {
+    font-family: "Lexend Exa", sans-serif;
+
+    font-size: 28px;
+
+    letter-spacing: 0.05em;
+
+    margin-bottom: 28px;
+}
+
+.paper-title {
+    font-family: "Instrument Serif", serif;
+
+    font-size: 62px;
+
+    line-height: 0.98;
+
+    font-weight: 400;
+
+    letter-spacing: -1px;
+
+    max-width: 550px;
+
+    margin: 0 0 30px;
+}
+
+.paper-meta {
+    display: flex;
+
+    gap: 18px;
+
+    align-items: center;
+
+    font-family: "Lexend Exa", sans-serif;
+
+    font-size: 14px;
+
+    letter-spacing: 0.06em;
+
+    margin-bottom: 38px;
+}
+
+
+/* -------------------------------- */
+/* SECTIONS */
+/* -------------------------------- */
+
+.paper-section {
+    margin-bottom: 34px;
+}
+
+.paper-section h2 {
+    font-family: "Lexend Exa", sans-serif;
+
+    font-size: 15px;
+
+    font-weight: 500;
+
+    letter-spacing: 0.08em;
+
+    margin: 0 0 18px;
+}
+
+.paper-authors,
+.paper-abstract {
+    font-family: "Lexend Exa", sans-serif;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+
+    letter-spacing: 0.02em;
+
+    margin: 0;
+}
+
+.paper-authors {
+    max-width: 500px;
+}
+
+.paper-abstract {
+    max-width: 560px;
+}
+
+
+/* -------------------------------- */
+/* PAPER STATS */
+/* -------------------------------- */
+
+.paper-stats {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 24px;
+
+    margin-top: 52px;
+}
+
+.paper-stats > div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+}
+
+.stat-label {
+    font-family: "Lexend Exa", sans-serif;
+
+    font-size: 11px;
+
+    letter-spacing: 0.08em;
+}
+
+.paper-stats strong {
+    font-family: "Lexend Exa", sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+    letter-spacing: 0.03em;
+}
+
+
+/* -------------------------------- */
+/* PAPER PREVIEW */
+/* -------------------------------- */
+
+.paper-preview {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 70px 0 70px 48px;
+}
+
+.paper-preview-placeholder {
+    width: 100%;
+
+    aspect-ratio: 0.72;
+
+    max-width: 500px;
+
+    border: 1px solid #000;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    font-family: "Instrument Serif", serif;
+
+    font-size: 48px;
+
+    line-height: 0.9;
+}
+
+
+/* -------------------------------- */
+/* RESPONSIVE */
+/* -------------------------------- */
+
+@media (max-width: 900px) {
+
+    .paper-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .paper-info {
+        border-right: none;
+        border-bottom: 1px solid #000;
+
+        padding-right: 0;
+    }
+
+    .paper-preview {
+        padding-left: 0;
+        padding-top: 50px;
+    }
+
+    .paper-title {
+        font-size: 52px;
+    }
+}
+
+
+@media (max-width: 600px) {
+
+    .paper-toolbar {
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .paper-actions {
+        flex-direction: column;
+        align-items: flex-end;
+
+        gap: 12px;
+
+        font-size: 11px;
+    }
+
+    .paper-title {
+        font-size: 44px;
+    }
+
+    .paper-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

@@ -1,0 +1,25 @@
+.search-page{
+
+    width:min(1100px,88vw);
+
+    margin:auto;
+
+    padding:36px 0 80px;
+
+}
+
+.search-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-top:60px;
+
+    padding-bottom:20px;
+
+    border-bottom:1px solid #000;
+
+}

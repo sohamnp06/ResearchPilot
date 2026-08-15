@@ -1,0 +1,76 @@
+.reader-page {
+    width: min(1100px, 88vw);
+    margin: auto;
+    padding: 36px 0 80px;
+}
+
+.reader-toolbar {
+    margin-top: 60px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #000;
+
+    display: flex;
+    justify-content: flex-end;
+}
+
+.reader-upload {
+    background: transparent;
+    border: 1px solid #E63939;
+
+    padding: 14px 42px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 14px;
+    letter-spacing: .08em;
+
+    cursor: pointer;
+}
+
+.reading-history {
+    border-left: 1px solid #000;
+    min-height: 800px;
+
+    padding: 30px 36px;
+}
+
+.reading-card {
+    border-bottom: 1px solid #000;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    padding: 0 12px 20px;
+}
+
+.reading-id {
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 14px;
+    letter-spacing: .08em;
+}
+
+.reading-card h1 {
+    font-family: "Instrument Serif", serif;
+    font-size: 40px;
+    font-weight: 400;
+
+    margin: 8px 0 22px;
+}
+
+.reading-meta {
+    display: flex;
+    gap: 20px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 14px;
+}
+
+.continue-button {
+    background: none;
+    border: none;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 16px;
+
+    cursor: pointer;
+}

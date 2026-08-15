@@ -1,0 +1,16 @@
+.paper-list{
+    margin-top:70px;
+}
+
+.paper-list h2{
+    font-family:"Lexend Exa",sans-serif;
+    font-size:22px;
+    letter-spacing:.08em;
+    margin-bottom:10px;
+}
+
+.paper-list>p{
+    color:#E63939;
+    margin-bottom:30px;
+    font-family:"Lexend Exa",sans-serif;
+}

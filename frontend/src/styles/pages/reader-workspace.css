@@ -1,0 +1,110 @@
+.reader-workspace {
+    width: min(1100px, 88vw);
+    margin: auto;
+    padding: 36px 0 80px;
+}
+
+
+/* BACK BUTTON */
+
+.reader-toolbar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    margin-top: 40px;
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid #000;
+}
+
+
+/* MAIN WORKSPACE */
+
+.reader-container {
+    margin-top: 30px;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    height: 760px;
+
+    min-height: 0;
+
+}
+
+
+/* PDF SIDE */
+
+.pdf-panel {
+    padding: 30px 36px;
+
+   border-right: 1px solid #000;
+
+   min-height: 0;
+   min-width: 0;
+
+   box-sizing: border-box;
+}
+
+
+/* PDF VIEWER */
+
+.pdf-viewer {
+    width: 100%;
+    height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    border: 1px solid #000;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+}
+
+
+/* NOTES SIDE */
+
+.notes-panel {
+    padding: 0 36px;
+
+    min-width: 0;
+    min-height: 0;
+
+    box-sizing: border-box;
+}
+
+
+.notes-panel h2 {
+    margin: 0 0 30px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: .08em;
+}
+
+
+/* NOTES EDITOR */
+
+.notes-editor {
+    width: 100%;
+    height: calc(100% - 48px);
+
+    resize: none;
+
+    border: 1px solid #E63939;
+    outline: none;
+
+    background: transparent;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+
+    box-sizing: border-box;
+
+    padding: 16px;
+}

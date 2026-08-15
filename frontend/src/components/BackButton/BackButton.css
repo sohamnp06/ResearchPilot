@@ -1,0 +1,23 @@
+.back-button{
+
+    background:none;
+
+    border:none;
+
+    cursor:pointer;
+
+    font-family:"Lexend Exa",sans-serif;
+
+    font-size:15px;
+
+    letter-spacing:.08em;
+
+    padding:0;
+
+}
+
+.back-button:hover{
+
+    color:#E63939;
+
+}
