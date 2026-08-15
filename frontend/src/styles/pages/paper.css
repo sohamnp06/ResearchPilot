@@ -30,46 +30,32 @@
     letter-spacing: 0.08em;
 }
 
-.paper-actions button {
-    /* background: transparent;
-
-    border: 1px solid #E63939;
-
-    color: #E63939;
-
-    padding: 10px 14px;
-
-    font-family: "Lexend Exa", sans-serif;
-    font-size: 13px;
-
-    letter-spacing: 0.08em;
-
-    cursor: pointer;
-
-    transition: 0.2s ease; */
-
-    display:flex;
-    gap:10px;
+.paper-action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
 }
 
-.paper-actions-buttons button{
-    background: transparent;
-    border: 1px solid #E63939;
-    color: #E63939;
-    padding:10px 14px;
-    font-family: "Lexend Exa", sans-serif;
-    font-size: 11px;
-
-    letter-spacing: 0.06em;
-
+.paper-action-buttons button {
+    background: #FFF6EA;
+    border: 2px solid #000;
+    color: #000;
+    padding: 12px 18px;
+    min-height: 52px;
+    font-family: "Instrument Serif", serif;
+    font-size: 28px;
+    line-height: 1;
+    letter-spacing: 0.02em;
     cursor: pointer;
-
-    transition: 0.2s ease;
+    box-shadow: 4px 4px 0 #000;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
-.paper-actions-buttons button:hover {
-    background: #E63939;
-    color: #fff;
+.paper-action-buttons button:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 #000;
+    filter: brightness(0.98);
 }
 
 /* -------------------------------- */

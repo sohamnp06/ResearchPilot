@@ -129,3 +129,46 @@ def test_library_reader_and_notes_flow():
     )
     assert update_response.status_code == 200, update_response.text
     assert update_response.json()["title"] == "Updated title"
+
+
+def test_delete_library_and_reader_entries():
+    paper_id = seed_paper()
+
+    db = SessionLocal()
+    existing_user = db.query(User).filter(User.email == "delete-user@example.com").first()
+    if not existing_user:
+        user = User(
+            username="delete-user",
+            email="delete-user@example.com",
+            password_hash=hash_password("StrongPass123!"),
+            email_verified=True,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    else:
+        user = existing_user
+    db.close()
+
+    token = create_access_token({"sub": str(user.id)})
+    headers = {"Authorization": f"Bearer {token}"}
+
+    client.post("/api/library", json={"paper_id": paper_id}, headers=headers)
+    client.post("/api/reader/progress", json={"paper_id": paper_id, "current_page": 6}, headers=headers)
+
+    library_delete = client.delete(f"/api/library/{paper_id}", headers=headers)
+    assert library_delete.status_code == 200, library_delete.text
+
+    list_response = client.get("/api/library", headers=headers)
+    assert list_response.status_code == 200, list_response.text
+    assert all(item["id"] != paper_id for item in list_response.json()["papers"])
+
+    reader_create = client.post("/api/reader/progress", json={"paper_id": paper_id, "current_page": 4}, headers=headers)
+    assert reader_create.status_code == 200, reader_create.text
+
+    reader_delete = client.delete(f"/api/reader/{paper_id}", headers=headers)
+    assert reader_delete.status_code == 200, reader_delete.text
+
+    reader_response = client.get("/api/reader", headers=headers)
+    assert reader_response.status_code == 200, reader_response.text
+    assert reader_response.json()["paper_id"] is None

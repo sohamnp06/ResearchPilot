@@ -39,6 +39,11 @@ async function request(path, options = {}) {
 
   if (!response.ok) {
     const message = typeof payload === "string" ? payload : payload?.detail || `Request failed: ${response.status}`;
+
+    if (response.status === 401) {
+      setAuthToken(null);
+    }
+
     throw new Error(message);
   }
 
@@ -113,6 +118,12 @@ export async function getLibrary() {
 
 export async function removeFromLibrary(paperId) {
   return request(`/api/library/${paperId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function removeFromReader(paperId) {
+  return request(`/api/reader/${paperId}`, {
     method: "DELETE",
   });
 }

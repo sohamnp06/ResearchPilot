@@ -6,8 +6,6 @@ from jose import jwt
 from app.core.config import settings
 
 
-SECRET_KEY = settings.secret_key
-
 password_hash = PasswordHash.recommended()
 
 ALGORITHM = "HS256"
@@ -40,7 +38,7 @@ def create_access_token(data: dict) -> str:
 
     encoded_jwt = jwt.encode(
         to_encode,
-        SECRET_KEY,
+        settings.secret_key,
         algorithm=ALGORITHM
     )
     return encoded_jwt

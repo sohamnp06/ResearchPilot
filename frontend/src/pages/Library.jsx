@@ -1,25 +1,39 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar/Navbar";
-import { getLibrary } from "../lib/api";
+import { getLibrary, removeFromLibrary } from "../lib/api";
 
 function Library() {
   const [papers, setPapers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadLibrary() {
-      try {
-        const data = await getLibrary();
-        setPapers(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+  async function loadLibrary() {
+    try {
+      const data = await getLibrary();
+      setPapers(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadLibrary();
   }, []);
+
+  async function handleRemove(paperId) {
+    const paper = papers.find((item) => item.id === paperId);
+    const confirmed = window.confirm(`Remove "${paper?.title || "this paper"}" from your library?`);
+    if (!confirmed) return;
+
+    try {
+      await removeFromLibrary(paperId);
+      await loadLibrary();
+    } catch (error) {
+      console.error(error);
+      alert("Could not remove paper from library");
+    }
+  }
 
   return (
     <main style={{ width: "min(1100px, 88vw)", margin: "0 auto", padding: "36px 0 80px" }}>
@@ -95,6 +109,24 @@ function Library() {
                       {paper.title}
                     </strong>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(paper.id)}
+                    style={{
+                      border: "2px solid #000",
+                      background: "#FFF6EA",
+                      color: "#000",
+                      fontFamily: '"Lexend Exa", sans-serif',
+                      fontSize: "11px",
+                      letterSpacing: ".12em",
+                      padding: "10px 14px",
+                      cursor: "pointer",
+                      boxShadow: "4px 4px 0 #000",
+                    }}
+                  >
+                    REMOVE
+                  </button>
                 </div>
               </li>
             ))}

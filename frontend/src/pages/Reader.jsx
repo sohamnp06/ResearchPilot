@@ -2,34 +2,47 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar/Navbar";
 import "../styles/pages/reader.css";
 import { useNavigate } from "react-router-dom";
-import { getLibrary, getReaderProgress, uploadPaper } from "../lib/api";
+import { getLibrary, getReaderProgress, removeFromReader, uploadPaper } from "../lib/api";
 
 function Reader() {
     const navigate = useNavigate();
     const [paper, setPaper] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        async function load() {
-            try {
-                const progress = await getReaderProgress();
-                if (progress.paper_id) {
-                    const library = await getLibrary();
-                    const match = library.find((item) => item.id === progress.paper_id);
-                    setPaper(match || { id: progress.paper_id, title: "Saved paper", year: "—", source: "local" });
-                } else {
-                    const library = await getLibrary();
-                    setPaper(library[0] || null);
-                }
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
+    async function load() {
+        try {
+            const progress = await getReaderProgress();
+            if (progress.paper_id) {
+                const library = await getLibrary();
+                const match = library.find((item) => item.id === progress.paper_id);
+                setPaper(match || { id: progress.paper_id, title: "Saved paper", year: "—", source: "local" });
+            } else {
+                const library = await getLibrary();
+                setPaper(library[0] || null);
             }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
+    }
 
+    useEffect(() => {
         load();
     }, []);
+
+    async function handleRemove(paperId) {
+        const confirmed = window.confirm(`Remove "${paper?.title || "this paper"}" from your reading history?`);
+        if (!confirmed) return;
+
+        try {
+            await removeFromReader(paperId);
+            await load();
+        } catch (error) {
+            console.error(error);
+            alert("Could not remove paper from reader");
+        }
+    }
 
     async function handleUpload(event) {
         const file = event.target.files?.[0];
@@ -70,7 +83,17 @@ function Reader() {
                             </div>
                         </div>
 
-                        <button className="continue-button" onClick={() => navigate(`/reader/${paper.id}`)}>CONTINUE</button>
+                        <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                            <button className="continue-button" onClick={() => navigate(`/reader/${paper.id}`)}>CONTINUE</button>
+                            <button
+                                type="button"
+                                className="continue-button"
+                                onClick={() => handleRemove(paper.id)}
+                                style={{ background: "#FFF6EA", color: "#000", border: "2px solid #000", boxShadow: "4px 4px 0 #000" }}
+                            >
+                                REMOVE
+                            </button>
+                        </div>
                     </article>
                 ) : (
                     <p>No saved reading history yet.</p>

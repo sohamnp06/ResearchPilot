@@ -299,6 +299,7 @@ def remove_from_library(
     )
     if not item:
         raise HTTPException(status_code=404, detail="Library item not found")
+
     db.delete(item)
     db.commit()
     return {"paper_id": paper_id, "deleted": True}
@@ -323,6 +324,25 @@ def get_reader_progress(
         "current_page": progress.current_page,
         "last_read_at": progress.last_read_at.isoformat(),
     }
+
+
+@router.delete("/reader/{paper_id}")
+def remove_reader_progress(
+    paper_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    progress = (
+        db.query(ReaderProgress)
+        .filter(ReaderProgress.paper_id == paper_id, ReaderProgress.user_id == current_user.id)
+        .first()
+    )
+    if not progress:
+        raise HTTPException(status_code=404, detail="Reader progress not found")
+
+    db.delete(progress)
+    db.commit()
+    return {"paper_id": paper_id, "deleted": True}
 
 
 @router.post("/reader/progress")
