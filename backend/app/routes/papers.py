@@ -76,11 +76,11 @@ def _seed_demo_papers(db: Session):
             "year": 2017,
             "source": "arxiv",
             "abstract": "The dominant sequence transduction models are based on recurrent or convolutional layers. We propose a new simple architecture, the Transformer, based solely on attention mechanisms.",
-            "pdf_url": "https://arxiv.org/pdf/1706.03762.pdf",
+            "pdf_url": "/pdfs/attention-is-all-you-need.pdf",
             "citation_count": 123,
             "references": 18,
             "status": "published",
-            "filename": "transformer.pdf",
+            "filename": "attention-is-all-you-need.pdf",
         },
         {
             "id": "paper-bert-demo",
@@ -89,11 +89,11 @@ def _seed_demo_papers(db: Session):
             "year": 2018,
             "source": "arxiv",
             "abstract": "We introduce a new language representation model called BERT, which stands for Bidirectional Encoder Representations from Transformers.",
-            "pdf_url": "https://arxiv.org/pdf/1810.04805.pdf",
+            "pdf_url": "/pdfs/attention-is-all-you-need.pdf",
             "citation_count": 97,
             "references": 25,
             "status": "published",
-            "filename": "bert.pdf",
+            "filename": "attention-is-all-you-need.pdf",
         },
     ]
 
@@ -118,6 +118,21 @@ def _seed_demo_papers(db: Session):
                     updated_at=datetime.now(timezone.utc),
                 )
             )
+            continue
+
+        needs_refresh = False
+        if exists.pdf_url != payload["pdf_url"]:
+            exists.pdf_url = payload["pdf_url"]
+            needs_refresh = True
+        if exists.file_path != str(UPLOAD_DIR / payload["filename"]):
+            exists.file_path = str(UPLOAD_DIR / payload["filename"])
+            needs_refresh = True
+        if exists.filename != payload["filename"]:
+            exists.filename = payload["filename"]
+            needs_refresh = True
+        if needs_refresh:
+            exists.updated_at = datetime.now(timezone.utc)
+
     db.commit()
 
 

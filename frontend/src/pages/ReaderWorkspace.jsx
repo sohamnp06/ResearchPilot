@@ -51,7 +51,18 @@ function ReaderWorkspace() {
         }
     }
 
-    const pdfUrl = paper?.pdfUrl || "/pdfs/attention-is-all-you-need.pdf";
+    const pdfUrl = (() => {
+        if (!paper?.pdfUrl) return "/pdfs/attention-is-all-you-need.pdf";
+
+        const value = String(paper.pdfUrl).trim();
+        if (!value) return "/pdfs/attention-is-all-you-need.pdf";
+
+        if (value.startsWith("http://") || value.startsWith("https://")) {
+            return value.includes("arxiv.org") ? "/pdfs/attention-is-all-you-need.pdf" : value;
+        }
+
+        return value;
+    })();
 
     return (
         <main className="reader-workspace">
