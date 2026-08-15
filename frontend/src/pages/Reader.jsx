@@ -2,26 +2,32 @@ import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar/Navbar";
 import "../styles/pages/reader.css";
 import { useNavigate } from "react-router-dom";
-import { getLibrary, getReaderProgress, removeFromReader, uploadPaper } from "../lib/api";
+import { getPaperDetails, getReaderHistory, getReaderProgress, removeFromReader, uploadPaper } from "../lib/api";
 
 function Reader() {
     const navigate = useNavigate();
-    const [paper, setPaper] = useState(null);
+    const [papers, setPapers] = useState([]);
     const [loading, setLoading] = useState(true);
 
     async function load() {
         try {
-            const progress = await getReaderProgress();
-            if (progress.paper_id) {
-                const library = await getLibrary();
-                const match = library.find((item) => item.id === progress.paper_id);
-                setPaper(match || { id: progress.paper_id, title: "Saved paper", year: "—", source: "local" });
-            } else {
-                const library = await getLibrary();
-                setPaper(library[0] || null);
+            const history = await getReaderHistory();
+            if (history.length > 0) {
+                setPapers(history);
+                return;
             }
+
+            const progress = await getReaderProgress();
+            if (progress?.paper_id) {
+                const paper = await getPaperDetails(progress.paper_id);
+                setPapers([paper]);
+                return;
+            }
+
+            setPapers([]);
         } catch (error) {
             console.error(error);
+            setPapers([]);
         } finally {
             setLoading(false);
         }
@@ -32,7 +38,8 @@ function Reader() {
     }, []);
 
     async function handleRemove(paperId) {
-        const confirmed = window.confirm(`Remove "${paper?.title || "this paper"}" from your reading history?`);
+        const target = papers.find((paper) => paper.id === paperId);
+        const confirmed = window.confirm(`Remove "${target?.title || "this paper"}" from your reading history?`);
         if (!confirmed) return;
 
         try {
@@ -71,30 +78,34 @@ function Reader() {
             <section className="reading-history">
                 {loading ? (
                     <p>Loading your reading history...</p>
-                ) : paper ? (
-                    <article className="reading-card">
-                        <div className="reading-info">
-                            <span className="reading-id">{paper.id}</span>
-                            <h1>{paper.title}</h1>
-                            <div className="reading-meta">
-                                <span>{paper.year}</span>
-                                <span>|</span>
-                                <span>{paper.source}</span>
+                ) : papers.length > 0 ? (
+                    papers.map((paper) => (
+                        <article key={paper.id} className="reading-card">
+                            <div className="reading-info">
+                                <span className="reading-id">{paper.id}</span>
+                                <h1>{paper.title}</h1>
+                                <div className="reading-meta">
+                                    <span>{paper.year || "—"}</span>
+                                    <span>|</span>
+                                    <span>{paper.source || "local"}</span>
+                                    <span>|</span>
+                                    <span>{paper.current_page ? `Page ${paper.current_page}` : "Opened"}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
-                            <button className="continue-button" onClick={() => navigate(`/reader/${paper.id}`)}>CONTINUE</button>
-                            <button
-                                type="button"
-                                className="continue-button"
-                                onClick={() => handleRemove(paper.id)}
-                                style={{ background: "#FFF6EA", color: "#000", border: "2px solid #000", boxShadow: "4px 4px 0 #000" }}
-                            >
-                                REMOVE
-                            </button>
-                        </div>
-                    </article>
+                            <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+                                <button className="continue-button" onClick={() => navigate(`/reader/${paper.id}`)}>CONTINUE</button>
+                                <button
+                                    type="button"
+                                    className="continue-button"
+                                    onClick={() => handleRemove(paper.id)}
+                                    style={{ background: "#FFF6EA", color: "#000", border: "2px solid #000", boxShadow: "4px 4px 0 #000" }}
+                                >
+                                    REMOVE
+                                </button>
+                            </div>
+                        </article>
+                    ))
                 ) : (
                     <p>No saved reading history yet.</p>
                 )}

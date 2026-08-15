@@ -111,6 +111,16 @@ def _ensure_reader_progress_schema():
                     )
                 )
 
+            # SQLite can keep a legacy unique index on paper_id only from older schema versions.
+            # If that exists, drop it so each user can track multiple opened papers.
+            legacy_indexes = connection.execute(
+                text("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='reader_progress'")
+            ).fetchall()
+            legacy_names = {row[0] for row in legacy_indexes}
+            for legacy_name in sorted(legacy_names):
+                if legacy_name != "uq_reader_progress_user_paper" and "user_paper" not in legacy_name:
+                    connection.execute(text(f"DROP INDEX IF EXISTS {legacy_name}"))
+
             connection.execute(text("DELETE FROM reader_progress WHERE user_id IS NULL"))
         except Exception:
             pass

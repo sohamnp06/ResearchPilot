@@ -341,6 +341,31 @@ def get_reader_progress(
     }
 
 
+@router.get("/reader/history")
+def get_reader_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    progress_rows = (
+        db.query(ReaderProgress)
+        .join(Paper, ReaderProgress.paper_id == Paper.id)
+        .filter(ReaderProgress.user_id == current_user.id)
+        .order_by(ReaderProgress.last_read_at.desc())
+        .all()
+    )
+
+    papers = []
+    for item in progress_rows:
+        paper_dict = _paper_to_dict(item.paper)
+        paper_dict.update({
+            "current_page": item.current_page,
+            "last_read_at": item.last_read_at.isoformat(),
+        })
+        papers.append(paper_dict)
+
+    return {"papers": papers}
+
+
 @router.delete("/reader/{paper_id}")
 def remove_reader_progress(
     paper_id: str,

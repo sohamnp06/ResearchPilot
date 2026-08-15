@@ -132,6 +132,11 @@ export async function getReaderProgress() {
   return request("/api/reader");
 }
 
+export async function getReaderHistory() {
+  const data = await request("/api/reader/history");
+  return data.papers || [];
+}
+
 export async function saveReaderProgress(paperId, currentPage) {
   return request("/api/reader/progress", {
     method: "POST",
