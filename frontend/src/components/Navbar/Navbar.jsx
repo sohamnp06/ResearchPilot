@@ -29,7 +29,7 @@ function Navbar() {
     return (
         <header className="nav">
             <Link to="/" className="logo">
-                Archivum
+                <img src="/archivum_logo.svg" alt="Archivum" className="archivum-logo"/>
             </Link>
 
             <nav className="nav-links">
