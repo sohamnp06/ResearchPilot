@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -11,19 +12,26 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
-    APP_NAME: str
-    DEBUG: bool
+    APP_NAME: str = "ResearchPilot"
+    DEBUG: bool = False
 
-    HOST: str
-    PORT: int
+    HOST: str = "127.0.0.1"
+    PORT: int = 8000
 
-    CACHE_DIR: str
-    PAPER_DIR: str
+    CACHE_DIR: str = "data/cache"
+    PAPER_DIR: str = "data/papers"
+    FAISS_STORAGE_PATH: str = "data/faiss_index"
 
-    SEMANTIC_SCHOLAR_API: str
-    ARXIV_API: str
+    SEMANTIC_SCHOLAR_API: str = "https://api.semanticscholar.org/graph/v1"
+    SEMANTIC_SCHOLAR_API_KEY: Optional[str] = None
+    ARXIV_API: str = "https://export.arxiv.org/api/query"
 
-    LOG_LEVEL: str
+    LLM_PROVIDER: str = "ollama"
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "llama3.2"
+    OPENAI_API_KEY: Optional[str] = None
+
+    LOG_LEVEL: str = "INFO"
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",

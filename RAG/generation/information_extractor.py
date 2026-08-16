@@ -138,15 +138,17 @@ JSON:
         )
 
         try:
-            data = json.loads(
-                response
-            )
-
-        except json.JSONDecodeError as exc:
-
-            raise ValueError(
-                "LLM returned invalid JSON."
-            ) from exc
+            data = json.loads(response)
+        except json.JSONDecodeError:
+            # Smaller local models sometimes add one explanatory sentence
+            # before or after an otherwise valid JSON object.
+            match = re.search(r"\{.*\}", response, flags=re.DOTALL)
+            if not match:
+                raise ValueError("LLM returned invalid JSON.") from None
+            try:
+                data = json.loads(match.group(0))
+            except json.JSONDecodeError as exc:
+                raise ValueError("LLM returned invalid JSON.") from exc
 
         required_fields = {
             "models",

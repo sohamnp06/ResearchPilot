@@ -150,14 +150,17 @@ JSON:
         )
 
         try:
-            data = json.loads(
-                response
-            )
-
-        except json.JSONDecodeError as exc:
-            raise ValueError(
-                "LLM returned invalid JSON."
-            ) from exc
+            data = json.loads(response)
+        except json.JSONDecodeError:
+            # Accept a JSON object wrapped in a short model preamble or
+            # postscript while retaining the same schema validation below.
+            match = re.search(r"\{.*\}", response, flags=re.DOTALL)
+            if not match:
+                raise ValueError("LLM returned invalid JSON.") from None
+            try:
+                data = json.loads(match.group(0))
+            except json.JSONDecodeError as exc:
+                raise ValueError("LLM returned invalid JSON.") from exc
 
         required_fields = {
             "limitations",

@@ -55,7 +55,7 @@ function Paper() {
                 <div className="paper-actions">
                     <button className="paper-action-button" onClick={handleAddToLibrary}>ADD TO LIBRARY</button>
                     <button className="paper-action-button" onClick={() => navigate(`/reader/${paper.id}`)}>READ PAPER</button>
-                    <button className="paper-action-button" onClick={() => navigate("/workspace")}>OPEN WORKSPACE</button>
+                    <button className="paper-action-button" onClick={() => navigate(`/workspace/${paper.id}`)}>OPEN WORKSPACE</button>
                 </div>
             </div>
 

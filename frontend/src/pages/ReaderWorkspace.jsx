@@ -51,18 +51,7 @@ function ReaderWorkspace() {
         }
     }
 
-    const pdfUrl = (() => {
-        if (!paper?.pdfUrl) return "/pdfs/attention-is-all-you-need.pdf";
-
-        const value = String(paper.pdfUrl).trim();
-        if (!value) return "/pdfs/attention-is-all-you-need.pdf";
-
-        if (value.startsWith("http://") || value.startsWith("https://")) {
-            return value.includes("arxiv.org") ? "/pdfs/attention-is-all-you-need.pdf" : value;
-        }
-
-        return value;
-    })();
+    const pdfUrl = paper?.pdfUrl ? String(paper.pdfUrl).trim() : null;
 
     return (
         <main className="reader-workspace">
@@ -74,7 +63,11 @@ function ReaderWorkspace() {
 
             <div className="reader-container">
                 <section className="pdf-panel">
-                    <PDFviewer file={pdfUrl} />
+                    {pdfUrl ? (
+                        <PDFviewer file={pdfUrl} />
+                    ) : (
+                        <p>This paper does not have an accessible PDF.</p>
+                    )}
                 </section>
 
                 <section className="notes-panel">

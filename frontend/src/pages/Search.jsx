@@ -1,48 +1,70 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar/Navbar";
 import BackButton from "../components/BackButton/BackButton";
 import SortBar from "../components/SortBar/SortBar";
-import PaperList from "../components/PaperList/PaperList";
-import { searchPapers } from "../lib/api";
+import { searchPapersExternal, importPaper } from "../lib/api";
 
 import "../styles/pages/search.css";
 
 function Search() {
-    const [query] = useState("transformer");
-    const [papers,setPapers] = useState([]);
-    const [loading,setLoading] = useState(true);
+    const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+
+    const query = searchParams.get("q") || "transformer";
+    const [results, setResults] = useState([]);
+    const [similarPapers, setSimilarPapers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [hasExactMatch, setHasExactMatch] = useState(true);
+    const [importingId, setImportingId] = useState(null);
+
+    const loadResults = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        setResults([]);
+        setSimilarPapers([]);
+
+        try {
+            const data = await searchPapersExternal(query, 10);
+            setResults(data.results || []);
+            setSimilarPapers(data.similar_papers || []);
+            setHasExactMatch(data.has_exact_match !== false);
+        } catch (err) {
+            console.error(err);
+            setError(err.message || "Search failed. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    }, [query]);
 
     useEffect(() => {
-        let isMounted = true;
+        loadResults();
+    }, [loadResults]);
 
-            async function load(){
-                setLoading(true);
-
-                try {
-                    const results = await searchPapers(query);
-
-                    if(isMounted){
-                        setPapers(results);
-                    }
-                } catch (error) {
-                    console.error(error);
-
-                    if(isMounted){
-                        setPapers([]);
-                    }
-                }finally{
-                    if(isMounted){
-                        setLoading(false);
-                    }
-                }
-            }
-
-            load();
-
-            return () => {isMounted = false};
-
+    async function handleOpenPaper(paper) {
+        setImportingId(paper.paper_id);
+        try {
+            const imported = await importPaper({
+                paper_id: paper.paper_id,
+                title: paper.title,
+                abstract: paper.abstract,
+                authors: paper.authors,
+                year: paper.year,
+                citation_count: paper.citation_count,
+                pdf_url: paper.pdf_url,
+                source: paper.source,
+            });
+            navigate(`/paper/${imported.id}`);
+        } catch (err) {
+            console.error(err);
+            alert("Could not open this paper: " + err.message);
+        } finally {
+            setImportingId(null);
         }
-    ,[query]);
+    }
+
+    const totalFound = results.length + similarPapers.length;
 
     return (
         <main className="search-page">
@@ -57,19 +79,122 @@ function Search() {
                 {loading ? (
                     <>
                         <h1>SEARCHING ARCHIVE<span className="search-dots">...</span></h1>
-                        <p>SEARCHING</p>
+                        <p>SEARCHING SEMANTIC SCHOLAR</p>
+                    </>
+                ) : error ? (
+                    <>
+                        <h1>SEARCH ERROR</h1>
+                        <p>{error}</p>
                     </>
                 ) : (
                     <>
                         <h1>ARCHIVE RESULTS</h1>
-                        <p>{papers.length} PAPERS FOUND</p>
+                        <p>{totalFound} PAPERS FOUND FOR "{query}"</p>
                     </>
                 )}
             </section>
 
-            {!loading && <PaperList papers={papers} />}
-            
+            {!loading && !error && (
+                <>
+                    {/* EXACT / PRIMARY RESULTS */}
+                    {results.length > 0 && (
+                        <section className="paper-list">
+                            {results.map((paper) => (
+                                <ExternalPaperCard
+                                    key={paper.paper_id}
+                                    paper={paper}
+                                    onOpen={handleOpenPaper}
+                                    importing={importingId === paper.paper_id}
+                                />
+                            ))}
+                        </section>
+                    )}
+
+                    {/* SIMILAR PAPERS — shown when no exact match */}
+                    {!hasExactMatch && similarPapers.length > 0 && (
+                        <>
+                            <section className="search-status is-loaded" style={{ marginTop: "2rem" }}>
+                                <h1>SIMILAR PAPERS</h1>
+                                <p>NO EXACT MATCH FOUND — DID YOU MEAN ONE OF THESE?</p>
+                            </section>
+
+                            <section className="paper-list">
+                                {similarPapers.map((paper) => (
+                                    <ExternalPaperCard
+                                        key={paper.paper_id}
+                                        paper={paper}
+                                        onOpen={handleOpenPaper}
+                                        importing={importingId === paper.paper_id}
+                                        isSimilar
+                                    />
+                                ))}
+                            </section>
+                        </>
+                    )}
+
+                    {/* NO RESULTS AT ALL */}
+                    {totalFound === 0 && (
+                        <section className="paper-list">
+                            <p style={{ padding: "2rem", opacity: 0.6 }}>
+                                NO PAPERS FOUND FOR "{query}". TRY A DIFFERENT SEARCH TERM.
+                            </p>
+                        </section>
+                    )}
+                </>
+            )}
         </main>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────
+// EXTERNAL PAPER CARD (from Semantic Scholar / arXiv)
+// ─────────────────────────────────────────────────────────────
+
+function ExternalPaperCard({ paper, onOpen, importing, isSimilar }) {
+    const authors = Array.isArray(paper.authors)
+        ? paper.authors.slice(0, 3).join(", ")
+        : "";
+
+    return (
+        <article
+            className="paper-card"
+            style={{ cursor: "default" }}
+        >
+            {isSimilar && (
+                <p style={{ fontSize: "0.7rem", opacity: 0.5, marginBottom: "0.25rem" }}>
+                    SIMILAR PAPER
+                </p>
+            )}
+
+            <p>{paper.source || "EXTERNAL"}</p>
+            <h3>{paper.title}</h3>
+
+            <span>{paper.year || "—"}</span>
+            <span>{authors || "Unknown Authors"}</span>
+            {paper.citation_count != null && (
+                <span>{paper.citation_count} CITATIONS</span>
+            )}
+            {paper.has_pdf && (
+                <span style={{ color: "#4ade80", fontSize: "0.7rem" }}>PDF AVAILABLE</span>
+            )}
+
+            <button
+                className="paper-card-action"
+                onClick={() => onOpen(paper)}
+                disabled={importing}
+                style={{
+                    marginTop: "0.75rem",
+                    background: "transparent",
+                    border: "1px solid currentColor",
+                    padding: "0.4rem 1rem",
+                    cursor: importing ? "wait" : "pointer",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.1em",
+                }}
+            >
+                {importing ? "OPENING..." : "OPEN PAPER →"}
+            </button>
+        </article>
     );
 }
 

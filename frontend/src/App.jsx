@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 
 import Landing from "./pages/Landing";
 import Search from "./pages/Search";
@@ -21,7 +21,8 @@ function App() {
                 <Route path="/paper/:id" element={<Paper />} />
                 <Route path="/library" element={<Library />} />
                 <Route path="/archive" element={<Archive />} />
-                <Route path="/workspace" element={<Workspace />} />
+                <Route path="/workspace/:id" element={<Workspace />} />
+                <Route path="/workspace" element={<Navigate to="/workspace/paper-transformer-demo" replace />} />
                 <Route path="/reader" element={<Reader />} />
                 <Route path="/reader/:id" element={<ReaderWorkspace />} />
                 <Route path="/login" element={<Login />} />

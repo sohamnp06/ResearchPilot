@@ -10,7 +10,6 @@ function setAuthToken(token) {
   } else {
     localStorage.removeItem("archivum_token");
   }
-
   window.dispatchEvent(new CustomEvent("auth-change", { detail: { isAuthenticated: !!token } }));
 }
 
@@ -38,7 +37,10 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    const message = typeof payload === "string" ? payload : payload?.detail || `Request failed: ${response.status}`;
+    const message =
+      typeof payload === "string"
+        ? payload
+        : payload?.detail || `Request failed: ${response.status}`;
 
     if (response.status === 401) {
       setAuthToken(null);
@@ -49,6 +51,10 @@ async function request(path, options = {}) {
 
   return payload;
 }
+
+// ─────────────────────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────────────────────
 
 export async function signupUser({ username, email, password }) {
   return request("/auth/signup", {
@@ -93,6 +99,10 @@ export async function getCurrentUser() {
   return request("/auth/me");
 }
 
+// ─────────────────────────────────────────────────────────────
+// LOCAL PAPER SEARCH (database)
+// ─────────────────────────────────────────────────────────────
+
 export async function searchPapers(query = "transformer") {
   const params = new URLSearchParams({ q: query });
   const data = await request(`/api/papers/search?${params.toString()}`);
@@ -100,9 +110,28 @@ export async function searchPapers(query = "transformer") {
 }
 
 export async function getPaperDetails(paperId) {
-  const data = await request(`/api/papers/${paperId}`);
-  return data;
+  return request(`/api/papers/${paperId}`);
 }
+
+// ─────────────────────────────────────────────────────────────
+// EXTERNAL PAPER SEARCH (Semantic Scholar + arXiv)
+// ─────────────────────────────────────────────────────────────
+
+export async function searchPapersExternal(query, limit = 10) {
+  const params = new URLSearchParams({ q: query, limit: String(limit) });
+  return request(`/api/search/papers?${params.toString()}`);
+}
+
+export async function importPaper(paperData) {
+  return request("/api/search/import", {
+    method: "POST",
+    body: JSON.stringify(paperData),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// LIBRARY
+// ─────────────────────────────────────────────────────────────
 
 export async function addToLibrary(paperId) {
   return request("/api/library", {
@@ -117,15 +146,15 @@ export async function getLibrary() {
 }
 
 export async function removeFromLibrary(paperId) {
-  return request(`/api/library/${paperId}`, {
-    method: "DELETE",
-  });
+  return request(`/api/library/${paperId}`, { method: "DELETE" });
 }
 
+// ─────────────────────────────────────────────────────────────
+// READER PROGRESS
+// ─────────────────────────────────────────────────────────────
+
 export async function removeFromReader(paperId) {
-  return request(`/api/reader/${paperId}`, {
-    method: "DELETE",
-  });
+  return request(`/api/reader/${paperId}`, { method: "DELETE" });
 }
 
 export async function getReaderProgress() {
@@ -143,6 +172,10 @@ export async function saveReaderProgress(paperId, currentPage) {
     body: JSON.stringify({ paper_id: paperId, current_page: currentPage }),
   });
 }
+
+// ─────────────────────────────────────────────────────────────
+// PAPER NOTES
+// ─────────────────────────────────────────────────────────────
 
 export async function getPaperNotes(paperId) {
   const data = await request(`/api/papers/${paperId}/notes`);
@@ -163,11 +196,15 @@ export async function updatePaperNote(paperId, noteId, title, content) {
   });
 }
 
+// ─────────────────────────────────────────────────────────────
+// UPLOAD
+// ─────────────────────────────────────────────────────────────
+
 export async function uploadPaper(file) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(`/api/papers/upload`, {
+  const response = await fetch("/api/papers/upload", {
     method: "POST",
     body: formData,
     headers: {
@@ -186,11 +223,85 @@ export async function uploadPaper(file) {
   }
 
   if (!response.ok) {
-    const message = typeof payload === "string" ? payload : payload?.detail || "Upload failed";
+    const message =
+      typeof payload === "string" ? payload : payload?.detail || "Upload failed";
     throw new Error(message);
   }
 
   return payload;
+}
+
+// ─────────────────────────────────────────────────────────────
+// RAG — ANALYZE PAPER
+// ─────────────────────────────────────────────────────────────
+
+export async function analyzePaper(paperId) {
+  return request(`/api/papers/${paperId}/analyze`, { method: "POST" });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RAG — ASK
+// ─────────────────────────────────────────────────────────────
+
+export async function askPaper(paperId, question) {
+  return request(`/api/papers/${paperId}/ask`, {
+    method: "POST",
+    body: JSON.stringify({ question }),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RAG — SUMMARIZE
+// ─────────────────────────────────────────────────────────────
+
+export async function summarizePaper(paperId) {
+  return request(`/api/papers/${paperId}/summarize`, { method: "POST" });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RAG — INFORMATION EXTRACTION
+// ─────────────────────────────────────────────────────────────
+
+export async function extractPaperInfo(paperId) {
+  return request(`/api/papers/${paperId}/extract`, { method: "POST" });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RAG — RESEARCH GAPS
+// ─────────────────────────────────────────────────────────────
+
+export async function getResearchGaps(paperId) {
+  return request(`/api/papers/${paperId}/research-gaps`, { method: "POST" });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RAG — CITATION VERIFICATION
+// ─────────────────────────────────────────────────────────────
+
+export async function verifyCitations(paperId, answer) {
+  return request(`/api/papers/${paperId}/verify-citations`, {
+    method: "POST",
+    body: JSON.stringify({ answer }),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RAG — PAPER COMPARISON
+// ─────────────────────────────────────────────────────────────
+
+export async function comparePapers(paperIdA, paperIdB) {
+  return request("/api/papers/compare", {
+    method: "POST",
+    body: JSON.stringify({ paper_id_a: paperIdA, paper_id_b: paperIdB }),
+  });
+}
+
+// ─────────────────────────────────────────────────────────────
+// RAG STATUS
+// ─────────────────────────────────────────────────────────────
+
+export async function getRagStatus() {
+  return request("/api/rag/status");
 }
 
 export { getAuthToken, setAuthToken };
