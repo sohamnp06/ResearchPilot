@@ -1,69 +1,81 @@
 .search-bar{
-    margin-top:70px;
+    margin-top: 70px;
 }
 
 .search-bar label{
+    display: block;
+    margin-bottom: 18px;
 
-    display:block;
-
-    margin-bottom:18px;
-
-    font-family:"Lexend Exa",sans-serif;
-
-    font-size:16px;
-
-    letter-spacing:.08em;
-
+    font-family:  "Lexend Exa", sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.08em;
 }
 
-.search-bar textarea{
+.terminal-input{
+    position:relative;
 
-    width:100%;
-
-    height:170px;
+    width: 100%;
+    height: 170px;
 
     background:transparent;
-
-    border:2px solid #111;
-
-    resize:none;
-
-    outline:none;
-
-    padding:28px;
-
-    font-family:"JetBrains Mono",monospace;
-
-    font-size:22px;
-
-    color:#000;
-
+    border: 2px solid #111;
+    box-sizing: border-box;
 }
 
-.search-bar textarea::placeholder{
+.terminal-prompt{
+    position:absolute;
 
-    color:#555;
+    top:28px;
+    left:34px;
 
-    opacity:1;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 22px;
+    line-height: 1.6;
 
+    color: #000;
+
+    pointer-events: none;
 }
 
-.helper{
+.terminal-input textarea{
+    width: 100%;
+    height: 100%;
 
-    display:flex;
+    background: transparent;
+    border: none;
+    resize: none;
+    outline: none;
 
-    justify-content:space-between;
+    box-sizing: border-box;
 
-    margin-top:12px;
+    padding: 28px 34px 28px 58px;
 
-    font-family:"Lexend Deca",sans-serif;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 22px;
+    line-height: 1.6;
 
-    font-size:14px;
+    color: #000;
 
+    overflow: hidden;
+
+    caret-color: #000;
 }
 
-.helper span:last-child{
+.terminal-input textarea::placeholder {
+    color: #555;
+    opacity: 1;
+}
 
-    color:#E63939;
+.helper {
+    display: flex;
+    justify-content: space-between;
 
+    margin-top: 12px;
+
+    font-family: "Lexend Deca", sans-serif;
+    font-size: 14px;
+}
+
+.helper span:last-child {
+    color: #E63939;
 }

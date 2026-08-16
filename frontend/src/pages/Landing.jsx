@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 
 import "../styles/pages/landing.css";
 import Navbar from "../components/Navbar/Navbar";
+import SearchBar from "../components/SearchBar/SearchBar";
 
 function Landing() {
     return (
@@ -31,16 +32,7 @@ function Landing() {
                 </div>
             </section>
 
-            <div className="search">
-                <label>QUERY</label>
-
-                <textarea placeholder="> How do self healing networks work?" />
-
-                <div className="helper">
-                    <span>Type your question and search the archive</span>
-                    <span>SHIFT + ENTER FOR NEW LINE</span>
-                </div>
-            </div>
+            <SearchBar />
 
         </div>
     );
