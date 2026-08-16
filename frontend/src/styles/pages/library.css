@@ -1,0 +1,331 @@
+.library-page {
+    width: min(1100px, 88vw);
+    margin: 0 auto;
+    padding: 36px 0 100px;
+    color: #000;
+}
+
+.library-header {
+    margin-top: 55px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    padding-bottom: 28px;
+    border-bottom: 1px solid #000;
+}
+
+.library-kicker {
+    margin: 0 0 8px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+
+    color: #E63939;
+}
+
+.library-header h1 {
+    margin: 0;
+
+    font-family: "Instrument Serif", serif;
+    font-size: 96px;
+    font-weight: 400;
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+}
+
+.archive-view-button {
+    border: 2px solid #000;
+    background: #FFF6EA;
+
+    padding: 14px 18px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+
+    cursor: pointer;
+
+    box-shadow: 5px 5px 0 #000;
+
+    transition:
+        transform 120ms ease,
+        box-shadow 120ms ease;
+}
+
+.archive-view-button:hover {
+    transform: translate(3px, 3px);
+    box-shadow: 2px 2px 0 #000;
+}
+
+.library-state {
+    margin-top: 50px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+}
+
+.library-empty {
+    margin-top: 50px;
+
+    width: min(420px, 100%);
+
+    border: 2px solid #000;
+    background: #FFF6EA;
+
+    padding: 24px;
+
+    box-shadow: 7px 7px 0 #000;
+}
+
+.library-empty-label {
+    margin: 0 0 12px;
+
+    color: #E63939;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+}
+
+.library-collection {
+    margin-top: 48px;
+}
+
+.library-collection-header {
+    display: flex;
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+}
+
+.library-collection-header span:first-child {
+    color: #E63939;
+}
+
+.library-grid {
+    list-style: none;
+
+    margin: 0;
+    padding: 0;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 28px 24px;
+}
+
+.library-card {
+    position: relative;
+
+    min-height: 360px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #FFF6EA;
+    border: 2px solid #000;
+
+    /* box-shadow: 8px 8px 0 #000; */
+
+    transition:
+        transform 180ms ease,
+        /* box-shadow 180ms ease; */
+}
+
+.library-card:hover {
+    transform: translate(-3px, -3px);
+    /* box-shadow: 11px 11px 0 #000; */
+}
+
+/* .library-card-1 {
+    transform: rotate(0.35deg);
+}
+
+.library-card-2 {
+    transform: rotate(-0.25deg);
+}
+
+.library-card-3 {
+    transform: rotate(0.2deg);
+} */
+
+/* .library-card-1:hover,
+.library-card-2:hover,
+.library-card-3:hover {
+    transform: translate(-3px, -3px) rotate(0deg);
+} */
+
+.library-paper {
+    min-height: 360px;
+
+    padding: 22px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.library-paper-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding-bottom: 16px;
+
+    border-bottom: 1px solid #000;
+}
+
+.library-paper-id {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.03em;
+}
+
+.library-paper-status {
+    color: #E63939;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
+}
+
+.library-paper-body {
+    flex: 1;
+
+    padding: 34px 0 30px;
+}
+
+.library-paper-body h2 {
+    margin: 0;
+
+    max-width: 95%;
+
+    font-family: "Instrument Serif", serif;
+    font-size: 46px;
+    font-weight: 400;
+
+    line-height: 0.98;
+    letter-spacing: -0.025em;
+}
+
+.library-paper-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    margin-top: 28px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.library-paper-bottom {
+    display: flex;
+    justify-content: space-between;
+
+    padding-top: 16px;
+
+    border-top: 1px solid #000;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+}
+
+.library-paper-bottom span:first-child {
+    color: #E63939;
+}
+
+.library-card-actions {
+    display: flex;
+
+    border-top: 2px solid #000;
+}
+
+.library-card-actions button {
+    flex: 1;
+
+    min-height: 48px;
+
+    border: 0;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+
+    cursor: pointer;
+
+    transition:
+        background 120ms ease,
+        color 120ms ease;
+}
+
+.library-card-actions button:first-child {
+    background: #000;
+    color: #FFF6EA;
+
+    border-right: 1px solid #FFF6EA;
+}
+
+.library-card-actions button:last-child {
+    background: #FFF6EA;
+    color: #000;
+}
+
+.library-card-actions button:first-child:hover {
+    background: #E63939;
+}
+
+.library-card-actions button:last-child:hover {
+    background: #000;
+    color: #FFF6EA;
+}
+
+@media (max-width: 800px) {
+    .library-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 28px;
+    }
+
+    .library-header h1 {
+        font-size: 72px;
+    }
+
+    .library-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 500px) {
+    .library-page {
+        width: min(92vw, 1100px);
+    }
+
+    .library-header h1 {
+        font-size: 60px;
+    }
+
+    .library-paper-body h2 {
+        font-size: 38px;
+    }
+
+    .library-paper-top {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
