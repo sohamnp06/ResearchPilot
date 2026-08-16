@@ -1,0 +1,1389 @@
+.archive-page {
+    width: min(1100px, 88vw);
+    margin: 0 auto;
+    padding: 36px 0 80px;
+    color: #000;
+}
+
+/* ─────────────────────────────
+   HEADER
+───────────────────────────── */
+
+.archive-header {
+    margin-top: 55px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+
+    padding-bottom: 26px;
+
+    border-bottom: 1px solid #000;
+}
+
+.archive-kicker {
+    margin: 0 0 8px;
+
+    color: #E63939;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 11px;
+    letter-spacing: .14em;
+}
+
+.archive-header h1 {
+    margin: 0;
+
+    font-family: "Instrument Serif", serif;
+    font-size: 96px;
+    font-weight: 400;
+    line-height: .85;
+    letter-spacing: -.04em;
+}
+
+.archive-back {
+    border: 2px solid #000;
+    background: #FFF6EA;
+
+    padding: 14px 18px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 10px;
+    letter-spacing: .1em;
+
+    cursor: pointer;
+
+    transition:
+        background 180ms ease,
+        color 180ms ease,
+        transform 180ms ease;
+}
+
+.archive-back:hover {
+    background: #000;
+    color: #FFF6EA;
+    transform: translateY(-2px);
+}
+
+/* ─────────────────────────────
+   STAGE
+───────────────────────────── */
+
+.archive-stage {
+    position: relative;
+
+    height: 680px;
+
+    margin-top: 36px;
+
+    overflow: hidden;
+
+    border: 1px solid #000;
+
+    background:
+        linear-gradient(
+            to bottom,
+            #FFF6EA 0%,
+            #FFF6EA 73%,
+            #F8EFE3 73%,
+            #F1E7D9 100%
+        );
+}
+
+/* ─────────────────────────────
+   2.5D WORLD
+───────────────────────────── */
+
+.archive-world {
+    position: absolute;
+
+    inset: 0;
+
+    perspective: 1100px;
+    perspective-origin: 50% 46%;
+
+    transform-style: preserve-3d;
+
+    /*
+     * React updates these variables from the cursor.
+     *
+     * The movement is deliberately tiny.
+     * This should feel like physical depth,
+     * not like the entire website is moving.
+     */
+    --archive-parallax-x: 0px;
+    --archive-parallax-y: 0px;
+    --archive-parallax-rotate-x: 0deg;
+    --archive-parallax-rotate-y: 0deg;
+
+    transform:
+        translate3d(
+            var(--archive-parallax-x),
+            var(--archive-parallax-y),
+            0
+        )
+        rotateX(
+            var(--archive-parallax-rotate-x)
+        )
+        rotateY(
+            var(--archive-parallax-rotate-y)
+        );
+
+    transition:
+        transform 180ms cubic-bezier(.22, .61, .36, 1);
+
+    will-change: transform;
+}
+
+/* subtle "surface" line */
+
+.archive-world::after {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    bottom: 27%;
+
+    height: 1px;
+
+    background: rgba(0, 0, 0, .12);
+
+    pointer-events: none;
+}
+
+/* ─────────────────────────────
+   PAPERS
+───────────────────────────── */
+
+.archive-paper {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 230px;
+    height: 320px;
+
+    cursor: pointer;
+    pointer-events: none;
+
+    transform-style: preserve-3d;
+
+    transition:
+        transform 520ms cubic-bezier(.16, 1, .3, 1),
+        filter 350ms ease,
+        opacity 350ms ease;
+
+    will-change: transform, filter, opacity;
+}
+
+/* Actual paper */
+
+.archive-paper-inner {
+    position: relative;
+
+    width: 100%;
+    height: 100%;
+
+    box-sizing: border-box;
+
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #FFF6EA;
+
+    border: 1px solid #111;
+
+    box-shadow:
+        8px 10px 18px rgba(0, 0, 0, .055);
+
+    transition:
+        box-shadow 450ms ease,
+        background 250ms ease;
+}
+
+/* subtle paper edge */
+
+.archive-paper-inner::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 3px;
+
+    border: 1px solid rgba(0, 0, 0, .035);
+
+    pointer-events: none;
+}
+
+/* ─────────────────────────────
+   HOVER / DEPTH
+───────────────────────────── */
+
+.archive-paper {
+    filter: brightness(1);
+    opacity: 1;
+}
+
+.archive-paper.is-dimmed {
+    filter: brightness(.965);
+    opacity: .88;
+}
+
+.archive-paper.is-hovered {
+    z-index: 50;
+
+    filter: brightness(1);
+    opacity: 1;
+}
+
+.archive-paper.is-hovered .archive-paper-inner {
+    box-shadow:
+        14px 18px 28px rgba(0, 0, 0, .12);
+}
+
+/* ─────────────────────────────
+   PAPER POSITIONS
+───────────────────────────── */
+
+.archive-paper-0 {
+    transform:
+        translate(-50%, -50%)
+        translate3d(-300px, 35px, -100px)
+        rotateY(8deg)
+        rotateZ(-3deg);
+}
+
+.archive-paper-1 {
+    transform:
+        translate(-50%, -50%)
+        translate3d(-55px, -35px, 130px)
+        rotateY(-2deg)
+        rotateZ(.8deg);
+}
+
+.archive-paper-2 {
+    transform:
+        translate(-50%, -50%)
+        translate3d(205px, 25px, -45px)
+        rotateY(-8deg)
+        rotateZ(3deg);
+}
+
+.archive-paper-3 {
+    transform:
+        translate(-50%, -50%)
+        translate3d(-175px, 180px, -190px)
+        rotateY(7deg)
+        rotateZ(-1.5deg);
+}
+
+.archive-paper-4 {
+    transform:
+        translate(-50%, -50%)
+        translate3d(105px, 185px, -150px)
+        rotateY(-6deg)
+        rotateZ(2deg);
+}
+
+.archive-paper-5 {
+    transform:
+        translate(-50%, -50%)
+        translate3d(350px, 145px, -250px)
+        rotateY(-10deg)
+        rotateZ(4deg);
+}
+
+/* ─────────────────────────────
+   HOVER POSITIONS
+───────────────────────────── */
+
+.archive-paper-0.is-hovered {
+    transform:
+        translate(-50%, -50%)
+        translate3d(-300px, 25px, 20px)
+        rotateY(4deg)
+        rotateZ(-2deg)
+        scale(1.015);
+}
+
+.archive-paper-1.is-hovered {
+    transform:
+        translate(-50%, -50%)
+        translate3d(-55px, -45px, 260px)
+        rotateY(0deg)
+        rotateZ(0deg)
+        scale(1.025);
+}
+
+.archive-paper-2.is-hovered {
+    transform:
+        translate(-50%, -50%)
+        translate3d(205px, 15px, 30px)
+        rotateY(-4deg)
+        rotateZ(2deg)
+        scale(1.015);
+}
+
+.archive-paper-3.is-hovered {
+    transform:
+        translate(-50%, -50%)
+        translate3d(-175px, 165px, -20px)
+        rotateY(3deg)
+        rotateZ(-1deg)
+        scale(1.01);
+}
+
+.archive-paper-4.is-hovered {
+    transform:
+        translate(-50%, -50%)
+        translate3d(105px, 170px, 15px)
+        rotateY(-3deg)
+        rotateZ(1deg)
+        scale(1.01);
+}
+
+.archive-paper-5.is-hovered {
+    transform:
+        translate(-50%, -50%)
+        translate3d(350px, 135px, -60px)
+        rotateY(-6deg)
+        rotateZ(3deg)
+        scale(1.01);
+}
+
+/* ─────────────────────────────
+   PAPER CONTENT
+───────────────────────────── */
+
+.archive-paper-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding-bottom: 12px;
+
+    border-bottom: 1px solid #000;
+
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+
+    white-space: nowrap;
+}
+
+.archive-paper-top span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.archive-paper-content {
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+.archive-paper-content h2 {
+    margin: 0;
+
+    font-family: "Instrument Serif", serif;
+    font-size: 36px;
+    font-weight: 400;
+
+    line-height: .98;
+    letter-spacing: -.025em;
+
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+
+    overflow: hidden;
+}
+
+.archive-paper-content p {
+    margin: 22px 0 0;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 9px;
+
+    letter-spacing: .08em;
+
+    text-transform: uppercase;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.archive-paper-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding-top: 12px;
+
+    border-top: 1px solid #000;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 8px;
+    letter-spacing: .1em;
+}
+
+.archive-paper-footer span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.archive-paper-footer span:last-child {
+    color: #E63939;
+}
+
+/* ─────────────────────────────
+   INSTRUCTIONS
+───────────────────────────── */
+
+.archive-instruction {
+    position: absolute;
+
+    left: 22px;
+    right: 22px;
+    bottom: 18px;
+
+    display: flex;
+    justify-content: space-between;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 9px;
+    letter-spacing: .1em;
+
+    pointer-events: none;
+
+    z-index: 30;
+}
+
+/* ─────────────────────────────
+   STATES
+───────────────────────────── */
+
+.archive-state {
+    margin-top: 60px;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 12px;
+    letter-spacing: .1em;
+}
+
+.archive-state p {
+    margin-bottom: 8px;
+    color: #E63939;
+}
+
+/* ─────────────────────────────
+   RESPONSIVE
+───────────────────────────── */
+
+@media (max-width: 800px) {
+    .archive-header {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .archive-header h1 {
+        font-size: 72px;
+    }
+
+    .archive-stage {
+        height: 600px;
+    }
+
+    .archive-paper {
+        width: 190px;
+        height: 270px;
+    }
+
+    .archive-paper-content h2 {
+        font-size: 30px;
+    }
+
+    .archive-paper-0 {
+        transform:
+            translate(-50%, -50%)
+            translate3d(-150px, 0, -80px)
+            rotateY(7deg)
+            rotateZ(-3deg);
+    }
+
+    .archive-paper-1 {
+        transform:
+            translate(-50%, -50%)
+            translate3d(0, -30px, 100px)
+            rotateY(-2deg)
+            rotateZ(1deg);
+    }
+
+    .archive-paper-2 {
+        transform:
+            translate(-50%, -50%)
+            translate3d(150px, 0, -80px)
+            rotateY(-7deg)
+            rotateZ(3deg);
+    }
+
+    .archive-paper-3 {
+        transform:
+            translate(-50%, -50%)
+            translate3d(-90px, 140px, -150px)
+            rotateY(5deg)
+            rotateZ(-1deg);
+    }
+
+    .archive-paper-4,
+    .archive-paper-5 {
+        display: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .archive-page {
+        width: 92vw;
+    }
+
+    .archive-header h1 {
+        font-size: 60px;
+    }
+
+    .archive-stage {
+        height: 520px;
+    }
+
+    .archive-paper {
+        width: 150px;
+        height: 220px;
+    }
+
+    .archive-paper-inner {
+        padding: 15px;
+    }
+
+    .archive-paper-content h2 {
+        font-size: 27px;
+    }
+
+    .archive-paper-content p {
+        margin-top: 14px;
+        font-size: 7px;
+    }
+
+    .archive-paper-top {
+        font-size: 7px;
+        padding-bottom: 9px;
+    }
+
+    .archive-paper-footer {
+        font-size: 7px;
+        padding-top: 9px;
+    }
+
+    .archive-paper-0 {
+        transform:
+            translate(-50%, -50%)
+            translate3d(-90px, 0, -80px)
+            rotateY(7deg)
+            rotateZ(-3deg);
+    }
+
+    .archive-paper-1 {
+        transform:
+            translate(-50%, -50%)
+            translate3d(0, -20px, 100px)
+            rotateY(-2deg)
+            rotateZ(1deg);
+    }
+
+    .archive-paper-2 {
+        transform:
+            translate(-50%, -50%)
+            translate3d(90px, 0, -80px)
+            rotateY(-7deg)
+            rotateZ(3deg);
+    }
+
+    .archive-paper-3,
+    .archive-paper-4,
+    .archive-paper-5 {
+        display: none;
+    }
+
+    .archive-instruction {
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+
+        font-size: 7px;
+    }
+}
+
+/* ─────────────────────────────
+   ARCHIVE → READER TRANSITION
+───────────────────────────── */
+
+/*
+ * Once a paper is selected:
+ *
+ * 1. Freeze the archive.
+ * 2. Fade the other papers.
+ * 3. Bring the selected paper toward the viewer.
+ * 4. Scale it up.
+ *
+ * The route changes after the animation completes.
+ */
+
+.archive-stage.is-opening .archive-world {
+    pointer-events: none;
+    transition:
+        transform 700ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.archive-stage.is-opening .archive-paper {
+    pointer-events: none;
+
+    opacity: 0;
+
+    transform:
+        translate(-50%, -50%)
+        translate3d(0, 0, -300px)
+        scale(.88);
+
+    transition:
+        transform 700ms cubic-bezier(.16, 1, .3, 1),
+        opacity 450ms ease;
+}
+
+/*
+ * The selected paper becomes the focal object.
+ *
+ * Because this selector is more specific than the
+ * individual paper position selectors, it overrides
+ * their normal transforms during the transition.
+ */
+
+.archive-stage.is-opening
+.archive-paper.is-opening {
+    z-index: 100;
+
+    opacity: 1;
+    filter: brightness(1);
+
+    transform:
+        translate(-50%, -50%)
+        translate3d(0, 0, 240px)
+        rotateY(0deg)
+        rotateZ(0deg)
+        scale(1.28);
+
+    transition:
+        transform 850ms cubic-bezier(.16, 1, .3, 1),
+        opacity 300ms ease,
+        filter 300ms ease;
+}
+
+/*
+ * Give the selected paper a stronger physical shadow
+ * as it comes toward the viewer.
+ */
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-paper-inner {
+    box-shadow:
+        20px 28px 55px rgba(0, 0, 0, .18);
+
+    transition:
+        box-shadow 700ms ease;
+}
+
+/*
+ * Hide the little instructions during the transition.
+ */
+
+.archive-stage.is-opening
+.archive-instruction {
+    opacity: 0;
+
+    transition:
+        opacity 250ms ease;
+}
+
+/*
+ * Slightly quiet the entire archive surface.
+ */
+
+.archive-stage.is-opening {
+    background:
+        linear-gradient(
+            to bottom,
+            #FFF6EA 0%,
+            #FFF6EA 73%,
+            #F8EFE3 73%,
+            #F1E7D9 100%
+        );
+
+    transition:
+        background 500ms ease;
+}
+
+/* ─────────────────────────────
+   4B — PAPER DOCUMENT REVEAL
+───────────────────────────── */
+
+/*
+ * The selected paper becomes a clean document
+ * surface before handing off to Reader Workspace.
+ */
+
+.archive-paper-reveal {
+    position: absolute;
+
+    inset: 0;
+
+    box-sizing: border-box;
+
+    padding: 24px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #FFF6EA;
+
+    border: 1px solid #111;
+
+    opacity: 0;
+
+    transform: translateY(24px);
+
+    clip-path: inset(100% 0 0 0);
+
+    pointer-events: none;
+
+    transition:
+        opacity 300ms ease,
+        transform 650ms cubic-bezier(.16, 1, .3, 1),
+        clip-path 650ms cubic-bezier(.16, 1, .3, 1);
+}
+
+
+/* ─────────────────────────────
+   COVER → DOCUMENT
+───────────────────────────── */
+
+/*
+ * The original paper cover disappears first.
+ */
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-paper-content,
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-paper-top,
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-paper-footer {
+
+    opacity: 0;
+
+    transform: translateY(-10px);
+
+    transition:
+        opacity 180ms ease,
+        transform 280ms ease;
+}
+
+
+/*
+ * Then the document surface reveals upward.
+ */
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-paper-reveal {
+
+    opacity: 1;
+
+    transform: translateY(0);
+
+    clip-path: inset(0 0 0 0);
+
+    transition-delay: 180ms;
+}
+
+
+/* ─────────────────────────────
+   DOCUMENT HEADER
+───────────────────────────── */
+
+.archive-reveal-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding-bottom: 12px;
+
+    border-bottom: 1px solid #000;
+
+    font-family: "JetBrains Mono", monospace;
+
+    font-size: 8px;
+
+    letter-spacing: .04em;
+
+    white-space: nowrap;
+
+}
+
+
+.archive-reveal-header span {
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+.archive-reveal-header span:last-child {
+
+    color: #E63939;
+
+}
+
+
+/* ─────────────────────────────
+   DOCUMENT BODY
+───────────────────────────── */
+
+.archive-reveal-body {
+
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+}
+
+
+.archive-reveal-title {
+
+    width: 100%;
+
+    max-width: 100%;
+
+    font-family: "Instrument Serif", serif;
+
+    font-size: 32px;
+
+    font-weight: 400;
+
+    line-height: .98;
+
+    letter-spacing: -.025em;
+
+    overflow-wrap: anywhere;
+
+    word-break: break-word;
+
+    opacity: 0;
+
+    transform: translateY(12px);
+
+    transition:
+        opacity 400ms ease,
+        transform 500ms cubic-bezier(.16, 1, .3, 1);
+
+}
+
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-title {
+
+    opacity: 1;
+
+    transform: translateY(0);
+
+    transition-delay: 300ms;
+
+}
+
+
+/* ─────────────────────────────
+   DOCUMENT LINES
+───────────────────────────── */
+
+.archive-reveal-lines {
+
+    margin-top: 30px;
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+}
+
+
+.archive-reveal-lines span {
+
+    display: block;
+
+    width: 100%;
+
+    height: 1px;
+
+    background: rgba(0, 0, 0, .28);
+
+    transform-origin: left;
+
+    transform: scaleX(0);
+
+}
+
+
+.archive-reveal-lines span:nth-child(2) {
+    width: 88%;
+}
+
+.archive-reveal-lines span:nth-child(3) {
+    width: 94%;
+}
+
+.archive-reveal-lines span:nth-child(4) {
+    width: 76%;
+}
+
+.archive-reveal-lines span:nth-child(5) {
+    width: 91%;
+}
+
+.archive-reveal-lines span:nth-child(6) {
+    width: 64%;
+}
+
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-lines span {
+
+    transform: scaleX(1);
+
+    transition:
+        transform 420ms cubic-bezier(.16, 1, .3, 1);
+
+}
+
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-lines span:nth-child(1) {
+    transition-delay: 420ms;
+}
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-lines span:nth-child(2) {
+    transition-delay: 450ms;
+}
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-lines span:nth-child(3) {
+    transition-delay: 480ms;
+}
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-lines span:nth-child(4) {
+    transition-delay: 510ms;
+}
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-lines span:nth-child(5) {
+    transition-delay: 540ms;
+}
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-lines span:nth-child(6) {
+    transition-delay: 570ms;
+}
+
+
+/* ─────────────────────────────
+   DOCUMENT FOOTER
+───────────────────────────── */
+
+.archive-reveal-footer {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding-top: 12px;
+
+    border-top: 1px solid #000;
+
+    font-family: "Lexend Exa", sans-serif;
+
+    font-size: 7px;
+
+    letter-spacing: .12em;
+
+}
+
+
+.archive-reveal-footer span:last-child {
+
+    color: #E63939;
+
+    font-size: 14px;
+
+}
+
+
+/* ─────────────────────────────
+   DEEPER PAPER SHADOW
+───────────────────────────── */
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-paper-inner {
+
+    box-shadow:
+        24px 32px 70px rgba(0, 0, 0, .20);
+
+    transition:
+        box-shadow 900ms cubic-bezier(.16, 1, .3, 1);
+
+}
+
+
+/* ─────────────────────────────
+   OPENING TILT
+───────────────────────────── */
+
+.archive-stage.is-opening
+.archive-paper.is-opening {
+
+    transform:
+        translate(-50%, -50%)
+        translate3d(0, -20px, 380px)
+        rotateY(0deg)
+        rotateX(-1.5deg)
+        rotateZ(0deg)
+        scale(1.28);
+
+}
+
+
+/* ─────────────────────────────
+   INSTRUCTIONS
+───────────────────────────── */
+
+.archive-stage.is-opening
+.archive-instruction {
+
+    opacity: 0;
+
+    transition:
+        opacity 220ms ease;
+
+}
+
+
+/* ─────────────────────────────
+   REDUCED MOTION
+───────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .archive-paper,
+    .archive-paper-inner,
+    .archive-paper-reveal,
+    .archive-reveal-title,
+    .archive-reveal-lines span {
+
+        transition: none !important;
+
+    }
+
+}
+
+/* ─────────────────────────────
+4C — REVEAL TYPOGRAPHY
+───────────────────────────── */
+
+/*
+ * The reveal is now treated as a real document surface.
+ * Keep the typography comfortably inside the physical paper
+ * even when the paper is scaled during the transition.
+ */
+
+.archive-paper-reveal {
+    position: absolute;
+
+    inset: 0;
+
+    box-sizing: border-box;
+
+    padding: 28px 34px 30px;
+
+    display: flex;
+    flex-direction: column;
+
+    background: #FFF6EA;
+
+    border: 1px solid #111;
+
+    opacity: 0;
+
+    transform: scale(.94);
+
+    pointer-events: none;
+
+    transition:
+        opacity 360ms ease,
+        transform 500ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-paper-reveal {
+    opacity: 1;
+
+    transform: scale(1);
+
+    transition-delay: 280ms;
+}
+
+
+/* ─────────────────────────────
+REVEAL HEADER
+───────────────────────────── */
+
+.archive-reveal-header {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 12px;
+
+    padding-bottom: 15px;
+
+    border-bottom: 1px solid #000;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 8px;
+    letter-spacing: .1em;
+
+    white-space: nowrap;
+}
+
+
+.archive-reveal-header span:last-child {
+    color: #E63939;
+}
+
+
+/* ─────────────────────────────
+REVEAL BODY
+───────────────────────────── */
+
+.archive-reveal-body {
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+
+/* ─────────────────────────────
+REVEAL TITLE
+───────────────────────────── */
+
+.archive-reveal-title {
+    width: 100%;
+    max-width: 100%;
+
+    font-family: "Instrument Serif", serif;
+
+    /*
+     * Deliberately restrained.
+     * The physical paper is already scaled during
+     * the transition, so the text doesn't need to
+     * become enormous.
+     */
+    font-size: 34px;
+
+    font-weight: 400;
+
+    line-height: 1.04;
+
+    letter-spacing: -.02em;
+
+    /*
+     * Important:
+     * paper titles can be long identifiers with
+     * underscores and no natural spaces.
+     */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+
+    overflow: hidden;
+
+    opacity: 0;
+
+    transform: translateY(12px);
+
+    transition:
+        opacity 400ms ease,
+        transform 500ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.archive-stage.is-opening
+.archive-paper.is-opening
+.archive-reveal-title {
+    opacity: 1;
+
+    transform: translateY(0);
+
+    transition-delay: 300ms;
+}
+
+
+/* ─────────────────────────────
+FAKE TEXT LINES
+───────────────────────────── */
+
+.archive-reveal-lines {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    margin-top: 30px;
+}
+
+.archive-reveal-lines span {
+    display: block;
+
+    height: 2px;
+
+    background: rgba(0, 0, 0, .18);
+}
+
+.archive-reveal-lines span:nth-child(1) {
+    width: 82%;
+}
+
+.archive-reveal-lines span:nth-child(2) {
+    width: 68%;
+}
+
+.archive-reveal-lines span:nth-child(3) {
+    width: 76%;
+}
+
+.archive-reveal-lines span:nth-child(4) {
+    width: 60%;
+}
+
+.archive-reveal-lines span:nth-child(5) {
+    width: 72%;
+}
+
+.archive-reveal-lines span:nth-child(6) {
+    width: 42%;
+}
+
+
+/* ─────────────────────────────
+REVEAL FOOTER
+───────────────────────────── */
+
+.archive-reveal-footer {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 16px;
+
+    padding-top: 15px;
+
+    border-top: 1px solid #000;
+
+    font-family: "Lexend Exa", sans-serif;
+
+    font-size: 9px;
+
+    letter-spacing: .13em;
+
+    white-space: nowrap;
+}
+
+.archive-reveal-footer span {
+    min-width: 0;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.archive-reveal-footer span:first-child {
+    color: #111;
+}

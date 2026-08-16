@@ -56,7 +56,7 @@ function Library() {
                 <button
                     type="button"
                     className="archive-view-button"
-                    onClick={() => console.log("Archive view coming soon")}
+                    onClick={() => navigate("/archive")}
                 >
                     ENTER ARCHIVE
                 </button>

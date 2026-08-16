@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import VerifyEmail from "./pages/VerifyEmail";
 import Library from "./pages/Library";
+import Archive from "./pages/Archive";
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
                 <Route path="/search" element={<Search />} />
                 <Route path="/paper/:id" element={<Paper />} />
                 <Route path="/library" element={<Library />} />
+                <Route path="/archive" element={<Archive />} />
                 <Route path="/workspace" element={<Workspace />} />
                 <Route path="/reader" element={<Reader />} />
                 <Route path="/reader/:id" element={<ReaderWorkspace />} />
