@@ -105,13 +105,16 @@ class RAGClient:
         logger.info(f"Embedding model loaded — dimension: {self._embedding_model.dimension}")
 
         settings = self._settings
+        model_name = getattr(settings, "OPENROUTER_MODEL", None) if settings.LLM_PROVIDER == "openrouter" else getattr(settings, "OLLAMA_MODEL", None)
         logger.info(
             f"Initializing LLM generator — provider={settings.LLM_PROVIDER}, "
-            f"model={settings.OLLAMA_MODEL}"
+            f"model={model_name}"
         )
         self._llm_generator = LLMGenerator(
-            model=settings.OLLAMA_MODEL,
-            base_url=settings.OLLAMA_BASE_URL,
+            provider=settings.LLM_PROVIDER,
+            model=model_name,
+            api_key=getattr(settings, "OPENROUTER_API_KEY", None),
+            base_url=getattr(settings, "OLLAMA_BASE_URL", None),
         )
         logger.info("LLM generator ready.")
 

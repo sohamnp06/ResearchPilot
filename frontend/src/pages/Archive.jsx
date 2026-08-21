@@ -302,10 +302,6 @@ function Archive() {
                                     <div className="archive-paper-inner">
                                         <div className="archive-paper-top">
                                             <span>
-                                                {paper.id}
-                                            </span>
-
-                                            <span>
                                                 {paper.year || "N/A"}
                                             </span>
                                         </div>

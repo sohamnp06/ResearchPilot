@@ -37,6 +37,14 @@ def _serialize_authors(authors):
     return json.dumps(authors or [])
 
 
+def _format_pdf_url(url: str | None) -> str | None:
+    if not url:
+        return None
+    if "/uploads/" in url:
+        return "/uploads/" + url.split("/uploads/", 1)[1]
+    return url
+
+
 def _paper_to_dict(paper: Paper) -> dict:
     return {
         "id": paper.id,
@@ -45,7 +53,7 @@ def _paper_to_dict(paper: Paper) -> dict:
         "year": paper.year,
         "source": paper.source,
         "abstract": paper.abstract,
-        "pdfUrl": paper.pdf_url,
+        "pdfUrl": _format_pdf_url(paper.pdf_url),
         "citationCount": paper.citation_count,
         "references": paper.references,
         "paperId": paper.id,
@@ -197,7 +205,7 @@ async def upload_paper(
     with open(file_path, "wb") as handle:
         handle.write(contents)
 
-    pdf_url = f"http://localhost:8000/uploads/{safe_filename}"
+    pdf_url = f"/uploads/{safe_filename}"
     record = Paper(
         id=paper_id,
         title=file.filename.removesuffix(suffix) or "Uploaded paper",

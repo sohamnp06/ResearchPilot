@@ -22,6 +22,7 @@ import subprocess
 import sys
 import time
 import threading
+import webbrowser
 from pathlib import Path
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -187,6 +188,16 @@ _ollama_proc: subprocess.Popen | None = None
 def check_or_start_ollama() -> bool:
     global _ollama_proc
 
+    provider = os.environ.get("LLM_PROVIDER", "openrouter").lower()
+    if provider == "openrouter":
+        api_key = os.environ.get("OPENROUTER_API_KEY", "")
+        if api_key:
+            ok("OpenRouter API", "Key configured")
+            return True
+        else:
+            warn("OpenRouter API", "OPENROUTER_API_KEY missing in .env")
+            return False
+
     # Is Ollama already running?
     code, _ = _http_get(f"{OLLAMA_URL}/api/tags", timeout=3)
     if 200 <= code < 300:
@@ -350,14 +361,20 @@ def run_health_checks() -> dict:
     code, _ = _http_get("https://export.arxiv.org/api/query?search_query=all:test&max_results=1", timeout=10)
     results["arxiv"] = 200 <= code < 300
 
-    # Ollama
-    code, _ = _http_get(f"{OLLAMA_URL}/api/tags", timeout=5)
-    results["ollama"] = 200 <= code < 300
+    # LLM check
+    provider = os.environ.get("LLM_PROVIDER", "openrouter").lower()
+    if provider == "openrouter":
+        results["llm"] = bool(os.environ.get("OPENROUTER_API_KEY", ""))
+    else:
+        code, _ = _http_get(f"{OLLAMA_URL}/api/tags", timeout=5)
+        results["llm"] = 200 <= code < 300
 
     return results
 
 def print_health_dashboard(checks: dict) -> None:
     header("ResearchPilot — Service Status")
+
+    provider = os.environ.get("LLM_PROVIDER", "openrouter").upper()
 
     _chk("Backend",          True)
     _chk("Frontend",         True)
@@ -365,7 +382,7 @@ def print_health_dashboard(checks: dict) -> None:
     _chk("Embedding Model",  checks.get("rag", False),
          "(loading in background...)" if not checks.get("rag") else "LOADED")
     _chk("FAISS",            checks.get("rag", False))
-    _chk("Ollama / LLM",     checks.get("ollama", False))
+    _chk(f"{provider} / LLM", checks.get("llm", False))
     _chk("Semantic Scholar", checks.get("semantic_scholar", False))
     _chk("arXiv",            checks.get("arxiv", False))
 
@@ -428,10 +445,10 @@ def main() -> int:
 
     header("Starting Services")
 
-    # 1. Ollama (non-fatal — warn if unavailable)
-    ollama_ok = check_or_start_ollama()
-    if not ollama_ok:
-        warn("Ollama", "RAG generation will not work until Ollama is running.")
+    # 1. LLM Provider setup
+    llm_ok = check_or_start_ollama()
+    if not llm_ok:
+        warn("LLM Provider", "Check .env configuration for OPENROUTER_API_KEY.")
 
     # 2. Backend (fatal if fails)
     if not start_backend():
@@ -463,6 +480,12 @@ def main() -> int:
     print()
     print(f"  {YELLOW}Press Ctrl+C to stop all services.{RESET}")
     print()
+
+    # Launch home page in browser
+    try:
+        webbrowser.open(FRONTEND_URL)
+    except Exception:
+        pass
 
     # 6. Keep running — monitor subprocesses
     try:

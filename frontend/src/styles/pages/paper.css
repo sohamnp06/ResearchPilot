@@ -255,34 +255,86 @@
 
 .paper-preview {
     display: flex;
-
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-
-    padding: 70px 0 70px 48px;
+    padding: 32px 0 70px 48px;
 }
 
+.paper-preview-container {
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid #000;
+    background: #fff;
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.paper-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #000;
+    background: #fafafa;
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+}
+
+.paper-preview-body {
+    padding: 12px;
+    display: flex;
+    justify-content: center;
+    background: #f5f5f5;
+    min-height: 480px;
+    max-height: 640px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.paper-preview-body .react-pdf__Document {
+    display: flex;
+    justify-content: center;
+}
+
+.paper-preview-body .react-pdf__Page {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: #fff;
+}
+
+.paper-preview-body canvas {
+    display: block !important;
+    max-width: 100%;
+    height: auto !important;
+    min-height: 400px;
+}
+
+.paper-preview-loading,
+.paper-preview-error,
 .paper-preview-placeholder {
     width: 100%;
-
     aspect-ratio: 0.72;
-
     max-width: 500px;
-
     border: 1px solid #000;
-
     display: flex;
-
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-
     text-align: center;
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    padding: 24px;
+    box-sizing: border-box;
+}
 
-    font-family: "Instrument Serif", serif;
-
-    font-size: 48px;
-
-    line-height: 0.9;
+.paper-preview-error {
+    border-color: #E63939;
+    color: #E63939;
+    background: rgba(230, 57, 57, 0.04);
 }
 
 

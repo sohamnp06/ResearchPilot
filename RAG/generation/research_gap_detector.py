@@ -136,25 +136,18 @@ JSON:
 
         response = response.strip()
 
-        response = re.sub(
-            r"^```(?:json)?\s*",
-            "",
-            response,
-            flags=re.IGNORECASE,
-        )
-
-        response = re.sub(
-            r"\s*```$",
-            "",
-            response,
-        )
+        if "```" in response:
+            code_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", response, flags=re.IGNORECASE)
+            if code_match:
+                response = code_match.group(1).strip()
+            else:
+                response = re.sub(r"^```(?:json)?\s*", "", response, flags=re.IGNORECASE)
+                response = re.sub(r"\s*```$", "", response)
 
         try:
             data = json.loads(response)
         except json.JSONDecodeError:
-            # Accept a JSON object wrapped in a short model preamble or
-            # postscript while retaining the same schema validation below.
-            match = re.search(r"\{.*\}", response, flags=re.DOTALL)
+            match = re.search(r"\{[\s\S]*\}", response)
             if not match:
                 raise ValueError("LLM returned invalid JSON.") from None
             try:

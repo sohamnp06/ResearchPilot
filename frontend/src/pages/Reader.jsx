@@ -107,14 +107,6 @@ function Reader() {
                             className="reading-card"
                         >
                             <div className="reading-info">
-
-                                {/* Backend can provide displayId / display_id */}
-                                <span className="reading-id">
-                                    {paper.displayId ||
-                                        paper.display_id ||
-                                        paper.id}
-                                </span>
-
                                 <h1>{paper.title}</h1>
 
                                 <div className="reading-meta">

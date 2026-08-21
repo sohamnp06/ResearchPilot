@@ -122,27 +122,19 @@ JSON:
 
         response = response.strip()
 
-        # Remove markdown code fences if the model
-        # happens to return them.
-        response = re.sub(
-            r"^```(?:json)?\s*",
-            "",
-            response,
-            flags=re.IGNORECASE,
-        )
-
-        response = re.sub(
-            r"\s*```$",
-            "",
-            response,
-        )
+        # Remove markdown code fences if present
+        if "```" in response:
+            code_match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", response, flags=re.IGNORECASE)
+            if code_match:
+                response = code_match.group(1).strip()
+            else:
+                response = re.sub(r"^```(?:json)?\s*", "", response, flags=re.IGNORECASE)
+                response = re.sub(r"\s*```$", "", response)
 
         try:
             data = json.loads(response)
         except json.JSONDecodeError:
-            # Smaller local models sometimes add one explanatory sentence
-            # before or after an otherwise valid JSON object.
-            match = re.search(r"\{.*\}", response, flags=re.DOTALL)
+            match = re.search(r"\{[\s\S]*\}", response)
             if not match:
                 raise ValueError("LLM returned invalid JSON.") from None
             try:

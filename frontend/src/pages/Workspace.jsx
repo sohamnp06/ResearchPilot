@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar/Navbar";
 import BackButton from "../components/BackButton/BackButton";
@@ -8,22 +8,79 @@ import {
     analyzePaper,
     askPaper,
     summarizePaper,
-    extractPaperInfo,
     getResearchGaps,
-    verifyCitations,
 } from "../lib/api";
 
 import "../styles/pages/workspace.css";
 
 // ─────────────────────────────────────────────────────────────
-// TAB IDs
+// TAB IDs (4 inline tabs)
 // ─────────────────────────────────────────────────────────────
 const TABS = {
     SUMMARY: "SUMMARY",
     INSIGHTS: "INSIGHTS",
-    EXTRACT: "EXTRACT",
-    CITATIONS: "CITATIONS",
+    GAPS: "RESEARCH GAPS",
+    CHAT: "CHAT",
 };
+
+// ─────────────────────────────────────────────────────────────
+// HELPER: PARSE SUMMARY INTO BRIEF SECTION INSIGHTS
+// ─────────────────────────────────────────────────────────────
+function parseSummarySections(summaryText) {
+    if (!summaryText) return [];
+
+    const lines = summaryText.split("\n");
+    const sections = [];
+    let currentTitle = "OVERVIEW";
+    let currentLines = [];
+
+    const headerRegex = /^(?:\d+[\.\)]\s+|\#{1,4}\s+|\*\*)([A-Za-z\s\/&]+?)(?:\*\*|:|\s*\(.*?\))?$/;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        const match = line.match(headerRegex);
+        const isCommonHeader = /^(research problem|objective|methodology|methods|experiments|dataset|datasets|key results|results|main findings|findings|limitations|conclusion|future work)/i.test(line.replace(/^[\d\.\#\*\-\s]+/, ""));
+
+        if ((match && isCommonHeader) || (line.startsWith("1.") || line.startsWith("2.") || line.startsWith("3.") || line.startsWith("4.") || line.startsWith("5.") || line.startsWith("6.") || line.startsWith("7.") || line.startsWith("8."))) {
+            if (currentLines.length > 0) {
+                const text = currentLines.join("\n").trim();
+                if (text) {
+                    sections.push({
+                        title: currentTitle.replace(/^\d+[\.\)]\s*/, "").toUpperCase(),
+                        content: text,
+                    });
+                }
+                currentLines = [];
+            }
+            currentTitle = line.replace(/^[\d\.\#\*\-\s]+/, "").replace(/[\*:]+$/, "").trim();
+        } else {
+            currentLines.push(lines[i]);
+        }
+    }
+
+    if (currentLines.length > 0) {
+        const text = currentLines.join("\n").trim();
+        if (text) {
+            sections.push({
+                title: currentTitle.replace(/^\d+[\.\)]\s*/, "").toUpperCase(),
+                content: text,
+            });
+        }
+    }
+
+    if (sections.length === 0 && summaryText.trim()) {
+        return [
+            {
+                title: "SUMMARY & OVERVIEW",
+                content: summaryText.trim(),
+            },
+        ];
+    }
+
+    return sections;
+}
 
 function Workspace() {
     const { id } = useParams();
@@ -32,7 +89,7 @@ function Workspace() {
     const [paper, setPaper] = useState(null);
     const [loadingPaper, setLoadingPaper] = useState(true);
 
-    // RAG state
+    // RAG analysis state
     const [isAnalyzed, setIsAnalyzed] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [analyzeResult, setAnalyzeResult] = useState(null);
@@ -41,125 +98,189 @@ function Workspace() {
     // Active tab
     const [activeTab, setActiveTab] = useState(TABS.SUMMARY);
 
-    // Summary
+    // Summary state
     const [summary, setSummary] = useState(null);
     const [loadingSummary, setLoadingSummary] = useState(false);
     const [summaryError, setSummaryError] = useState(null);
 
-    // Q&A
-    const [question, setQuestion] = useState("");
-    const [qaResult, setQaResult] = useState(null);
-    const [loadingQa, setLoadingQa] = useState(false);
-    const [qaError, setQaError] = useState(null);
-    const textareaRef = useRef(null);
-
-    // Extraction
-    const [extractResult, setExtractResult] = useState(null);
-    const [loadingExtract, setLoadingExtract] = useState(false);
-    const [extractError, setExtractError] = useState(null);
-
-    // Research Gaps (Insights tab)
+    // Research Gaps state
     const [gapsResult, setGapsResult] = useState(null);
     const [loadingGaps, setLoadingGaps] = useState(false);
     const [gapsError, setGapsError] = useState(null);
 
-    // Citation Verification
-    const [verifyInput, setVerifyInput] = useState("");
-    const [verifyResult, setVerifyResult] = useState(null);
-    const [loadingVerify, setLoadingVerify] = useState(false);
-    const [verifyError, setVerifyError] = useState(null);
+    // Chat / Q&A state
+    const [question, setQuestion] = useState("");
+    const [chatHistory, setChatHistory] = useState([]);
+    const [loadingQa, setLoadingQa] = useState(false);
+    const [qaError, setQaError] = useState(null);
+    const textareaRef = useRef(null);
+    const chatContainerRef = useRef(null);
+
+    useEffect(() => {
+        if (chatHistory.length > 0 && chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [chatHistory, loadingQa]);
 
     // ─────────────────────────────────────────────────────────
-    // LOAD PAPER
+    // AUTO-LOAD SUMMARY
     // ─────────────────────────────────────────────────────────
+    const loadSummaryForPaper = useCallback(async (paperId) => {
+        if (!paperId) return;
+        setLoadingSummary(true);
+        setSummaryError(null);
 
+        try {
+            const result = await summarizePaper(paperId);
+            setSummary(result.summary);
+        } catch (err) {
+            console.error("Summary error:", err);
+            setSummaryError(err.message || "Failed to generate summary.");
+        } finally {
+            setLoadingSummary(false);
+        }
+    }, []);
+
+    // ─────────────────────────────────────────────────────────
+    // TRIGGER ANALYSIS & AUTO-SUMMARIZE
+    // ─────────────────────────────────────────────────────────
+    const triggerAnalysis = useCallback(async (paperId) => {
+        if (!paperId) return;
+        setIsAnalyzing(true);
+        setAnalyzeError(null);
+        setAnalyzeResult(null);
+
+        try {
+            const result = await analyzePaper(paperId);
+            setAnalyzeResult(result);
+            setIsAnalyzed(true);
+            await loadSummaryForPaper(paperId);
+        } catch (err) {
+            console.error("Analysis error:", err);
+            setAnalyzeError(err.message || "Failed to analyze paper.");
+        } finally {
+            setIsAnalyzing(false);
+        }
+    }, [loadSummaryForPaper]);
+
+    // ─────────────────────────────────────────────────────────
+    // LOAD PAPER & AUTO-START ANALYSIS ON OPENING WORKSPACE
+    // ─────────────────────────────────────────────────────────
     useEffect(() => {
         if (!id) {
             setLoadingPaper(false);
             return;
         }
 
+        let isMounted = true;
+
         async function load() {
             setLoadingPaper(true);
             setIsAnalyzed(false);
+            setIsAnalyzing(false);
             setAnalyzeResult(null);
             setAnalyzeError(null);
             setSummary(null);
             setSummaryError(null);
-            setExtractResult(null);
-            setExtractError(null);
             setGapsResult(null);
             setGapsError(null);
+            setChatHistory([]);
+
             try {
                 const data = await getPaperDetails(id);
+                if (!isMounted) return;
                 setPaper(data);
-                setIsAnalyzed(data.status === "analyzed");
+
+                if (data.status === "analyzed") {
+                    setIsAnalyzed(true);
+                    loadSummaryForPaper(id);
+                } else {
+                    triggerAnalysis(id);
+                }
             } catch (err) {
-                console.error(err);
+                console.error("Error loading paper details:", err);
+                if (isMounted) {
+                    setAnalyzeError(err.message || "Could not load paper.");
+                }
             } finally {
-                setLoadingPaper(false);
+                if (isMounted) {
+                    setLoadingPaper(false);
+                }
             }
         }
 
         load();
-    }, [id]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [id, loadSummaryForPaper, triggerAnalysis]);
 
     // ─────────────────────────────────────────────────────────
-    // ANALYZE
+    // LOAD RESEARCH GAPS
     // ─────────────────────────────────────────────────────────
-
-    async function handleAnalyze() {
-        if (!id) return;
-        setIsAnalyzing(true);
-        setAnalyzeError(null);
-        setAnalyzeResult(null);
+    const loadGapsForPaper = useCallback(async (paperId) => {
+        if (!paperId) return;
+        setLoadingGaps(true);
+        setGapsError(null);
 
         try {
-            const result = await analyzePaper(id);
-            setAnalyzeResult(result);
-            setIsAnalyzed(true);
+            const result = await getResearchGaps(paperId);
+            setGapsResult(result);
         } catch (err) {
-            setAnalyzeError(err.message);
+            console.error("Research gaps error:", err);
+            setGapsError(err.message || "Failed to detect research gaps.");
         } finally {
-            setIsAnalyzing(false);
+            setLoadingGaps(false);
+        }
+    }, []);
+
+    // ─────────────────────────────────────────────────────────
+    // TAB CHANGE HANDLER
+    // ─────────────────────────────────────────────────────────
+    async function handleTabChange(tab) {
+        setActiveTab(tab);
+
+        if (!isAnalyzed) return;
+
+        if (tab === TABS.SUMMARY && !summary && !loadingSummary) {
+            await loadSummaryForPaper(id);
+        } else if (tab === TABS.INSIGHTS && !summary && !loadingSummary) {
+            await loadSummaryForPaper(id);
+        } else if (tab === TABS.GAPS && !gapsResult && !loadingGaps) {
+            await loadGapsForPaper(id);
         }
     }
 
     // ─────────────────────────────────────────────────────────
-    // SUMMARIZE
+    // CHAT / Q&A
     // ─────────────────────────────────────────────────────────
+    async function handleAskQuestion(queryToAsk) {
+        const textToQuery = (queryToAsk || question).trim();
+        if (!id || !isAnalyzed || !textToQuery || loadingQa) return;
 
-    async function handleSummarize() {
-        if (!id || !isAnalyzed) return;
-        setLoadingSummary(true);
-        setSummaryError(null);
+        const userMsg = {
+            id: Date.now(),
+            role: "user",
+            text: textToQuery,
+        };
 
-        try {
-            const result = await summarizePaper(id);
-            setSummary(result.summary);
-            setActiveTab(TABS.SUMMARY);
-        } catch (err) {
-            setSummaryError(err.message);
-        } finally {
-            setLoadingSummary(false);
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────
-    // Q&A
-    // ─────────────────────────────────────────────────────────
-
-    async function handleAsk() {
-        if (!id || !isAnalyzed || !question.trim()) return;
+        setChatHistory((prev) => [...prev, userMsg]);
+        setQuestion("");
         setLoadingQa(true);
         setQaError(null);
-        setQaResult(null);
 
         try {
-            const result = await askPaper(id, question.trim());
-            setQaResult(result);
+            const result = await askPaper(id, textToQuery);
+            const assistantMsg = {
+                id: Date.now() + 1,
+                role: "assistant",
+                text: result.answer,
+                sources: result.sources || [],
+            };
+            setChatHistory((prev) => [...prev, assistantMsg]);
         } catch (err) {
-            setQaError(err.message);
+            setQaError(err.message || "Failed to get answer.");
         } finally {
             setLoadingQa(false);
         }
@@ -168,94 +289,20 @@ function Workspace() {
     function handleQuestionKeyDown(e) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            handleAsk();
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────
-    // EXTRACT
-    // ─────────────────────────────────────────────────────────
-
-    async function handleExtract() {
-        if (!id || !isAnalyzed) return;
-        setLoadingExtract(true);
-        setExtractError(null);
-
-        try {
-            const result = await extractPaperInfo(id);
-            setExtractResult(result);
-            setActiveTab(TABS.EXTRACT);
-        } catch (err) {
-            setExtractError(err.message);
-        } finally {
-            setLoadingExtract(false);
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────
-    // RESEARCH GAPS
-    // ─────────────────────────────────────────────────────────
-
-    async function handleGaps() {
-        if (!id || !isAnalyzed) return;
-        setLoadingGaps(true);
-        setGapsError(null);
-
-        try {
-            const result = await getResearchGaps(id);
-            setGapsResult(result);
-            setActiveTab(TABS.INSIGHTS);
-        } catch (err) {
-            setGapsError(err.message);
-        } finally {
-            setLoadingGaps(false);
-        }
-    }
-
-    async function handleTabChange(tab) {
-        setActiveTab(tab);
-
-        if (!isAnalyzed) return;
-
-        if (tab === TABS.SUMMARY && !summary && !loadingSummary) {
-            await handleSummarize();
-        } else if (tab === TABS.INSIGHTS && !gapsResult && !loadingGaps) {
-            await handleGaps();
-        } else if (tab === TABS.EXTRACT && !extractResult && !loadingExtract) {
-            await handleExtract();
-        }
-    }
-
-    // ─────────────────────────────────────────────────────────
-    // CITATION VERIFY
-    // ─────────────────────────────────────────────────────────
-
-    async function handleVerify() {
-        if (!id || !isAnalyzed || !verifyInput.trim()) return;
-        setLoadingVerify(true);
-        setVerifyError(null);
-        setVerifyResult(null);
-
-        try {
-            const result = await verifyCitations(id, verifyInput.trim());
-            setVerifyResult(result);
-            setActiveTab(TABS.CITATIONS);
-        } catch (err) {
-            setVerifyError(err.message);
-        } finally {
-            setLoadingVerify(false);
+            handleAskQuestion();
         }
     }
 
     // ─────────────────────────────────────────────────────────
     // RENDER HELPERS
     // ─────────────────────────────────────────────────────────
-
     if (loadingPaper) {
         return (
             <main className="workspace-page">
                 <Navbar />
-                <div className="workspace-toolbar"><div className="workspace-paper-name">LOADING...</div></div>
+                <div className="workspace-toolbar">
+                    <div className="workspace-paper-name">LOADING WORKSPACE...</div>
+                </div>
             </main>
         );
     }
@@ -264,7 +311,9 @@ function Workspace() {
         return (
             <main className="workspace-page">
                 <Navbar />
-                <div className="workspace-toolbar"><div className="workspace-paper-name">PAPER NOT FOUND</div></div>
+                <div className="workspace-toolbar">
+                    <div className="workspace-paper-name">PAPER NOT FOUND</div>
+                </div>
             </main>
         );
     }
@@ -281,12 +330,15 @@ function Workspace() {
         }
     }
 
+    const sectionInsights = parseSummarySections(summary);
+
     return (
         <main className="workspace-page">
             <Navbar />
 
             {/* TOP BAR */}
             <div className="workspace-toolbar">
+                <BackButton />
                 <div className="workspace-paper-name">
                     PAPER : {paper.title?.toUpperCase()}
                 </div>
@@ -295,17 +347,16 @@ function Workspace() {
             {/* MAIN WORKSPACE */}
             <section className="workspace-layout">
 
-                {/* LEFT SIDE — paper info + actions */}
+                {/* LEFT SIDE — Paper Info + Analysis Status */}
                 <aside className="workspace-paper">
-
-                    <div className="workspace-label">PAPER</div>
+                    <div className="workspace-label">WORKSPACE</div>
 
                     <h1 className="workspace-title">{paper.title}</h1>
 
                     <div className="workspace-meta">
                         <span>{paper.year || "—"}</span>
                         <span>|</span>
-                        <span>{paper.source || "—"}</span>
+                        <span>{paper.source || "archive"}</span>
                     </div>
 
                     <section className="workspace-section">
@@ -320,58 +371,44 @@ function Workspace() {
                         <p>{paper.abstract || "No abstract available."}</p>
                     </section>
 
-                    {/* ANALYZE CONTROL */}
+                    {/* LIVE ANALYSIS STATUS BADGE (Replaces old buttons) */}
                     <section className="workspace-section">
-                        <h2>ANALYSIS</h2>
+                        <h2>ANALYSIS STATUS</h2>
 
-                        {!isAnalyzed ? (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                                <p style={{ fontSize: "0.75rem", opacity: 0.6 }}>
-                                    Analyze this paper to enable Q&amp;A, summarization,
-                                    and information extraction.
+                        {isAnalyzing && (
+                            <div className="analysis-status-card is-analyzing">
+                                <div className="status-spinner-row">
+                                    <span className="pulse-dot"></span>
+                                    <strong style={{ letterSpacing: "0.08em" }}>ANALYZING PAPER...</strong>
+                                </div>
+                                <p style={{ fontSize: "0.75rem", opacity: 0.7, marginTop: "0.4rem" }}>
+                                    Extracting text, generating semantic chunks, and building FAISS vector index.
                                 </p>
-                                <button
-                                    onClick={handleAnalyze}
-                                    disabled={isAnalyzing}
-                                    style={actionBtnStyle(isAnalyzing)}
-                                >
-                                    {isAnalyzing ? "ANALYZING..." : "ANALYZE PAPER"}
-                                </button>
-                                {analyzeError && (
-                                    <p style={errorStyle}>{analyzeError}</p>
-                                )}
                             </div>
-                        ) : (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                                <p style={{ fontSize: "0.75rem", color: "#4ade80" }}>
+                        )}
+
+                        {isAnalyzed && !isAnalyzing && (
+                            <div className="analysis-status-card is-ready">
+                                <strong style={{ color: "#16a34a", letterSpacing: "0.08em" }}>
                                     ✓ PAPER ANALYZED
-                                    {analyzeResult && (
-                                        <> — {analyzeResult.chunks} CHUNKS / {analyzeResult.vectors} VECTORS</>
-                                    )}
+                                </strong>
+                                <p style={{ fontSize: "0.75rem", opacity: 0.7, marginTop: "0.4rem" }}>
+                                    {analyzeResult?.chunks
+                                        ? `${analyzeResult.chunks} CHUNKS · ${analyzeResult.vectors || analyzeResult.chunks} VECTORS INDEXED`
+                                        : "RAG index active & ready for Q&A, summary and insights."}
                                 </p>
+                            </div>
+                        )}
 
+                        {analyzeError && !isAnalyzing && (
+                            <div className="analysis-status-card is-error">
+                                <strong style={{ color: "#dc2626" }}>ANALYSIS FAILED</strong>
+                                <p style={errorStyle}>{analyzeError}</p>
                                 <button
-                                    onClick={handleSummarize}
-                                    disabled={loadingSummary}
-                                    style={actionBtnStyle(loadingSummary)}
+                                    onClick={() => triggerAnalysis(id)}
+                                    style={{ ...actionBtnStyle(false), marginTop: "0.6rem" }}
                                 >
-                                    {loadingSummary ? "SUMMARIZING..." : "SUMMARIZE"}
-                                </button>
-
-                                <button
-                                    onClick={handleExtract}
-                                    disabled={loadingExtract}
-                                    style={actionBtnStyle(loadingExtract)}
-                                >
-                                    {loadingExtract ? "EXTRACTING..." : "EXTRACT INFO"}
-                                </button>
-
-                                <button
-                                    onClick={handleGaps}
-                                    disabled={loadingGaps}
-                                    style={actionBtnStyle(loadingGaps)}
-                                >
-                                    {loadingGaps ? "DETECTING..." : "RESEARCH GAPS"}
+                                    RETRY ANALYSIS
                                 </button>
                             </div>
                         )}
@@ -385,20 +422,18 @@ function Workspace() {
                                 href={paper.pdfUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                style={{ fontSize: "0.75rem", opacity: 0.7 }}
+                                style={{ fontSize: "0.75rem", opacity: 0.7, textDecoration: "underline" }}
                             >
-                                OPEN PDF →
+                                OPEN FULL PDF →
                             </a>
                         </section>
                     )}
-
                 </aside>
 
-
-                {/* RIGHT SIDE — AI results */}
+                {/* RIGHT SIDE — AI Tabs Panel */}
                 <section className="workspace-ai">
 
-                    {/* TABS */}
+                    {/* 4 INLINE TABS */}
                     <div className="workspace-tabs">
                         <button
                             className={activeTab === TABS.SUMMARY ? "active" : ""}
@@ -413,249 +448,302 @@ function Workspace() {
                             INSIGHTS
                         </button>
                         <button
-                            className={activeTab === TABS.EXTRACT ? "active" : ""}
-                            onClick={() => handleTabChange(TABS.EXTRACT)}
+                            className={activeTab === TABS.GAPS ? "active" : ""}
+                            onClick={() => handleTabChange(TABS.GAPS)}
                         >
-                            EXTRACT
+                            RESEARCH GAPS
                         </button>
                         <button
-                            className={activeTab === TABS.CITATIONS ? "active" : ""}
-                            onClick={() => setActiveTab(TABS.CITATIONS)}
+                            className={activeTab === TABS.CHAT ? "active" : ""}
+                            onClick={() => handleTabChange(TABS.CHAT)}
                         >
-                            CITATIONS
+                            CHAT
                         </button>
                     </div>
 
-
-                    {/* ── SUMMARY TAB ── */}
+                    {/* ── 1. SUMMARY TAB (Summary and Overview) ── */}
                     {activeTab === TABS.SUMMARY && (
-                        <div className="workspace-summary">
+                        <div className="workspace-tab-content">
                             {summaryError && <p style={errorStyle}>{summaryError}</p>}
-                            {summary ? (
-                                <pre style={{
-                                    whiteSpace: "pre-wrap",
-                                    fontFamily: "inherit",
-                                    fontSize: "0.82rem",
-                                    lineHeight: 1.7,
-                                }}>
-                                    {summary}
-                                </pre>
+
+                            {loadingSummary ? (
+                                <div className="workspace-loading-box">
+                                    <span className="pulse-dot"></span>
+                                    <p>GENERATING STRUCTURED SUMMARY &amp; OVERVIEW...</p>
+                                </div>
+                            ) : summary ? (
+                                <div className="workspace-summary-view">
+                                    <div className="summary-overview-badge">
+                                        OVERVIEW &amp; STRUCTURED SUMMARY
+                                    </div>
+                                    <pre className="summary-text-block">
+                                        {summary}
+                                    </pre>
+                                </div>
                             ) : (
-                                <p style={{ opacity: 0.5 }}>
-                                    {isAnalyzed
-                                        ? "Click SUMMARIZE to generate a structured paper summary."
-                                        : "Analyze the paper first, then click SUMMARIZE."}
-                                </p>
-                            )}
-                        </div>
-                    )}
-
-
-                    {/* ── INSIGHTS TAB (Research Gaps) ── */}
-                    {activeTab === TABS.INSIGHTS && (
-                        <div className="workspace-insights">
-                            {gapsError && <p style={errorStyle}>{gapsError}</p>}
-
-                            {gapsResult ? (
-                                <>
-                                    <GapSection title="RESEARCH GAPS" items={gapsResult.research_gaps} />
-                                    <GapSection title="LIMITATIONS" items={gapsResult.limitations} />
-                                    <GapSection title="UNRESOLVED QUESTIONS" items={gapsResult.unresolved_questions} />
-                                    <GapSection title="FUTURE WORK" items={gapsResult.future_work} />
-                                </>
-                            ) : (
-                                <p style={{ opacity: 0.5 }}>
-                                    {loadingGaps
-                                        ? "Detecting research gaps..."
-                                        : isAnalyzed
-                                        ? "Click RESEARCH GAPS to detect limitations and open questions."
-                                        : "Analyze the paper first."}
-                                </p>
-                            )}
-                        </div>
-                    )}
-
-
-                    {/* ── EXTRACT TAB ── */}
-                    {activeTab === TABS.EXTRACT && (
-                        <div className="workspace-insights">
-                            {extractError && <p style={errorStyle}>{extractError}</p>}
-
-                            {extractResult ? (
-                                <>
-                                    <ExtractSection title="MODELS" items={extractResult.models} />
-                                    <ExtractSection title="DATASETS" items={extractResult.datasets} />
-                                    <ExtractSection title="METRICS" items={extractResult.metrics} />
-                                    <ExtractSection title="KEY RESULTS" items={extractResult.results} />
-                                    <ExtractSection title="METHODS" items={extractResult.methods} />
-                                    <ExtractSection title="EXPERIMENTAL SETTINGS" items={extractResult.experimental_settings} />
-                                </>
-                            ) : (
-                                <p style={{ opacity: 0.5 }}>
-                                    {loadingExtract
-                                        ? "Extracting paper information..."
-                                        : isAnalyzed
-                                        ? "Click EXTRACT INFO to extract structured information."
-                                        : "Analyze the paper first."}
-                                </p>
-                            )}
-                        </div>
-                    )}
-
-
-                    {/* ── CITATIONS TAB ── */}
-                    {activeTab === TABS.CITATIONS && (
-                        <div className="workspace-insights">
-                            <div style={{ marginBottom: "1rem" }}>
-                                <label style={{ fontSize: "0.7rem", letterSpacing: "0.1em", opacity: 0.6 }}>
-                                    CLAIM TO VERIFY
-                                </label>
-                                <textarea
-                                    value={verifyInput}
-                                    onChange={(e) => setVerifyInput(e.target.value)}
-                                    placeholder="> paste a claim or answer to verify against the paper..."
-                                    style={{
-                                        width: "100%",
-                                        minHeight: "80px",
-                                        background: "transparent",
-                                        border: "1px solid rgba(255,255,255,0.2)",
-                                        color: "inherit",
-                                        padding: "0.5rem",
-                                        fontFamily: "inherit",
-                                        fontSize: "0.8rem",
-                                        resize: "vertical",
-                                        marginTop: "0.5rem",
-                                    }}
-                                />
-                                <button
-                                    onClick={handleVerify}
-                                    disabled={loadingVerify || !verifyInput.trim() || !isAnalyzed}
-                                    style={{ ...actionBtnStyle(loadingVerify), marginTop: "0.5rem" }}
-                                >
-                                    {loadingVerify ? "VERIFYING..." : "VERIFY CITATIONS"}
-                                </button>
-                            </div>
-
-                            {verifyError && <p style={errorStyle}>{verifyError}</p>}
-
-                            {verifyResult && (
-                                <div>
-                                    <p style={{
-                                        color: verifyResult.verified ? "#4ade80" : "#f87171",
-                                        fontSize: "0.75rem",
-                                        marginBottom: "1rem",
-                                    }}>
-                                        {verifyResult.verified ? "✓ VERIFIED" : "✗ NOT FULLY VERIFIED"}
+                                <div className="workspace-empty-box">
+                                    <p>
+                                        {isAnalyzing
+                                            ? "Analyzing paper and preparing summary..."
+                                            : isAnalyzed
+                                            ? "Summary not yet generated."
+                                            : "Analyzing paper..."}
                                     </p>
+                                    {isAnalyzed && (
+                                        <button
+                                            onClick={() => loadSummaryForPaper(id)}
+                                            style={{ ...actionBtnStyle(false), marginTop: "1rem" }}
+                                        >
+                                            GENERATE SUMMARY
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-                                    {(verifyResult.claims || []).map((claim, i) => (
-                                        <div key={i} style={{
-                                            background: "rgba(255,255,255,0.04)",
-                                            border: "1px solid rgba(255,255,255,0.1)",
-                                            padding: "0.75rem",
-                                            marginBottom: "0.75rem",
-                                        }}>
-                                            <p style={{ fontSize: "0.8rem", fontWeight: 600 }}>
-                                                {claim.supported ? "✓" : "✗"} {claim.claim}
-                                            </p>
-                                            <p style={{ fontSize: "0.75rem", opacity: 0.7, marginTop: "0.4rem" }}>
-                                                {claim.reason}
-                                            </p>
-                                            {claim.sources?.length > 0 && (
-                                                <p style={{ fontSize: "0.7rem", opacity: 0.5, marginTop: "0.4rem" }}>
-                                                    SOURCES: {claim.sources.join(", ")}
-                                                </p>
-                                            )}
+                    {/* ── 2. INSIGHTS TAB (Sections in summary explained in brief) ── */}
+                    {activeTab === TABS.INSIGHTS && (
+                        <div className="workspace-tab-content">
+                            {summaryError && <p style={errorStyle}>{summaryError}</p>}
+
+                            {loadingSummary ? (
+                                <div className="workspace-loading-box">
+                                    <span className="pulse-dot"></span>
+                                    <p>EXTRACTING SECTION INSIGHTS IN BRIEF...</p>
+                                </div>
+                            ) : sectionInsights.length > 0 ? (
+                                <div className="workspace-insights-list">
+                                    <div className="insights-header-note">
+                                        <span>KEY SECTION BREAKDOWN &amp; BRIEF EXPLANATIONS</span>
+                                    </div>
+                                    {sectionInsights.map((sec, idx) => (
+                                        <div key={idx} className="insight-card">
+                                            <h3>{sec.title}</h3>
+                                            <p style={{ whiteSpace: "pre-wrap" }}>{sec.content}</p>
                                         </div>
                                     ))}
                                 </div>
-                            )}
-
-                            {!verifyResult && !verifyError && (
-                                <p style={{ opacity: 0.5 }}>
-                                    {isAnalyzed
-                                        ? "Enter a claim above and click VERIFY CITATIONS."
-                                        : "Analyze the paper first."}
-                                </p>
+                            ) : (
+                                <div className="workspace-empty-box">
+                                    <p>
+                                        {isAnalyzing
+                                            ? "Analyzing paper..."
+                                            : "No section insights available yet."}
+                                    </p>
+                                    {isAnalyzed && (
+                                        <button
+                                            onClick={() => loadSummaryForPaper(id)}
+                                            style={{ ...actionBtnStyle(false), marginTop: "1rem" }}
+                                        >
+                                            LOAD SECTION INSIGHTS
+                                        </button>
+                                    )}
+                                </div>
                             )}
                         </div>
                     )}
 
+                    {/* ── 3. RESEARCH GAPS TAB (Limitations, Future Work, Gaps) ── */}
+                    {activeTab === TABS.GAPS && (
+                        <div className="workspace-tab-content">
+                            {gapsError && <p style={errorStyle}>{gapsError}</p>}
 
-                    {/* ── QUERY (always visible below tabs) ── */}
-                    <div className="workspace-query">
-                        <label>QUERY</label>
-
-                        <textarea
-                            ref={textareaRef}
-                            value={question}
-                            onChange={(e) => setQuestion(e.target.value)}
-                            onKeyDown={handleQuestionKeyDown}
-                            placeholder="> ask something about this paper..."
-                            disabled={!isAnalyzed || loadingQa}
-                        />
-
-                        <div className="workspace-query-hint">
-                            ENTER TO SEND
-                            <br />
-                            SHIFT + ENTER FOR NEW LINE
-                        </div>
-
-                        {isAnalyzed && question.trim() && (
-                            <button
-                                onClick={handleAsk}
-                                disabled={loadingQa}
-                                style={{ ...actionBtnStyle(loadingQa), marginTop: "0.5rem" }}
-                            >
-                                {loadingQa ? "THINKING..." : "ASK →"}
-                            </button>
-                        )}
-
-                        {!isAnalyzed && (
-                            <p style={{ fontSize: "0.7rem", opacity: 0.4, marginTop: "0.5rem" }}>
-                                ANALYZE PAPER TO ENABLE Q&A
-                            </p>
-                        )}
-                    </div>
-
-                    {/* Q&A RESULT */}
-                    {qaError && <p style={{ ...errorStyle, margin: "0 0 1rem 0" }}>{qaError}</p>}
-
-                    {qaResult && (
-                        <div style={{
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            padding: "1rem",
-                            margin: "0.5rem 0 1rem 0",
-                        }}>
-                            <p style={{ fontSize: "0.7rem", opacity: 0.5, marginBottom: "0.5rem" }}>
-                                ANSWER
-                            </p>
-                            <p style={{ fontSize: "0.85rem", lineHeight: 1.7 }}>
-                                {qaResult.answer}
-                            </p>
-
-                            {qaResult.sources?.length > 0 && (
-                                <div style={{ marginTop: "1rem" }}>
-                                    <p style={{ fontSize: "0.65rem", opacity: 0.5, marginBottom: "0.5rem" }}>
-                                        SOURCES ({qaResult.sources.length})
+                            {loadingGaps ? (
+                                <div className="workspace-loading-box">
+                                    <span className="pulse-dot"></span>
+                                    <p>DETECTING RESEARCH GAPS, LIMITATIONS &amp; FUTURE WORK...</p>
+                                </div>
+                            ) : gapsResult ? (
+                                <div className="workspace-insights-list">
+                                    <GapSection
+                                        title="RESEARCH GAPS"
+                                        items={gapsResult.research_gaps}
+                                        description="Open gaps and unexplored challenges in the current literature."
+                                    />
+                                    <GapSection
+                                        title="RESEARCH LIMITATIONS"
+                                        items={gapsResult.limitations}
+                                        description="Methodological, data, scale, or design constraints identified in this work."
+                                    />
+                                    <GapSection
+                                        title="FUTURE WORK &amp; OPPORTUNITIES"
+                                        items={gapsResult.future_work}
+                                        description="Promising research directions, extensions, and next steps that can be done."
+                                    />
+                                    <GapSection
+                                        title="UNRESOLVED QUESTIONS"
+                                        items={gapsResult.unresolved_questions}
+                                        description="Open questions left unanswered for subsequent investigation."
+                                    />
+                                </div>
+                            ) : (
+                                <div className="workspace-empty-box">
+                                    <p>
+                                        {isAnalyzing
+                                            ? "Analyzing paper..."
+                                            : isAnalyzed
+                                            ? "Click below to detect research gaps, limitations, and future work."
+                                            : "Paper analysis in progress..."}
                                     </p>
-                                    {qaResult.sources.map((src, i) => (
-                                        <div key={i} style={{
-                                            fontSize: "0.72rem",
-                                            opacity: 0.65,
-                                            borderTop: "1px solid rgba(255,255,255,0.08)",
-                                            paddingTop: "0.5rem",
-                                            marginTop: "0.5rem",
-                                        }}>
-                                            <strong>{src.chunk_id}</strong>
-                                            {src.section && <> · {src.section}</>}
-                                            {src.page_start != null && <> · P.{src.page_start}</>}
-                                            <> · score {src.score}</>
-                                            <br />
-                                            <span style={{ opacity: 0.6 }}>{src.text}</span>
+                                    {isAnalyzed && (
+                                        <button
+                                            onClick={() => loadGapsForPaper(id)}
+                                            style={{ ...actionBtnStyle(false), marginTop: "1rem" }}
+                                        >
+                                            DETECT RESEARCH GAPS
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* ── 4. CHAT TAB (Q&A inline with other 3 tabs) ── */}
+                    {activeTab === TABS.CHAT && (
+                        <div className="workspace-tab-content workspace-chat-tab">
+                            {/* IF NO QUESTIONS ASKED YET: SHOW INPUT AT TOP WITH SUGGESTED QUESTIONS */}
+                            {chatHistory.length === 0 && (
+                                <>
+                                    <div className="workspace-query">
+                                        <label>ASK A QUESTION</label>
+                                        <textarea
+                                            ref={textareaRef}
+                                            value={question}
+                                            onChange={(e) => setQuestion(e.target.value)}
+                                            onKeyDown={handleQuestionKeyDown}
+                                            placeholder={
+                                                isAnalyzing
+                                                    ? "Analyzing paper in progress..."
+                                                    : isAnalyzed
+                                                    ? "> ask anything about methodology, results, equations, or datasets..."
+                                                    : "Please wait for paper analysis to complete..."
+                                            }
+                                            disabled={!isAnalyzed || loadingQa || isAnalyzing}
+                                        />
+                                        <div className="workspace-query-hint">
+                                            ENTER TO SEND <br /> SHIFT + ENTER FOR NEW LINE
+                                        </div>
+                                        {isAnalyzed && question.trim() && (
+                                            <button
+                                                onClick={() => handleAskQuestion()}
+                                                disabled={loadingQa}
+                                                style={{ ...actionBtnStyle(loadingQa), marginTop: "0.6rem" }}
+                                            >
+                                                {loadingQa ? "SEARCHING..." : "ASK →"}
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {isAnalyzed && (
+                                        <div className="prompt-chips" style={{ marginTop: "1rem" }}>
+                                            <span style={{ fontSize: "0.7rem", opacity: 0.5, width: "100%", marginBottom: "4px" }}>
+                                                SUGGESTED QUESTIONS:
+                                            </span>
+                                            <button
+                                                className="prompt-chip"
+                                                onClick={() => handleAskQuestion("What is the core contribution and architecture introduced in this paper?")}
+                                            >
+                                                What is the core contribution and architecture?
+                                            </button>
+                                            <button
+                                                className="prompt-chip"
+                                                onClick={() => handleAskQuestion("What datasets and evaluation benchmarks were used?")}
+                                            >
+                                                What datasets and benchmarks were used?
+                                            </button>
+                                            <button
+                                                className="prompt-chip"
+                                                onClick={() => handleAskQuestion("What are the key limitations and trade-offs of this approach?")}
+                                            >
+                                                What are the key limitations and trade-offs?
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {/* CONVERSATION HISTORY */}
+                            {chatHistory.length > 0 && (
+                                <div className="chat-messages-container" ref={chatContainerRef}>
+                                    {chatHistory.map((msg) => (
+                                        <div
+                                            key={msg.id}
+                                            className={`chat-message ${msg.role === "user" ? "chat-msg-user" : "chat-msg-assistant"}`}
+                                        >
+                                            <div className="chat-msg-sender">
+                                                {msg.role === "user" ? "> YOU" : "> RESEARCHPILOT AI"}
+                                            </div>
+                                            <div className="chat-msg-body">
+                                                {msg.text}
+                                            </div>
+
+                                            {msg.sources && msg.sources.length > 0 && (
+                                                <div className="chat-msg-sources">
+                                                    <span className="sources-label">SOURCES ({msg.sources.length}):</span>
+                                                    {msg.sources.map((src, i) => (
+                                                        <div key={i} className="source-item">
+                                                            <strong>{src.chunk_id}</strong>
+                                                            {src.section && <> · {src.section}</>}
+                                                            {src.page_start != null && <> · P.{src.page_start}</>}
+                                                            <> · score {src.score}</>
+                                                            <br />
+                                                            <span className="source-text">{src.text}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
+
+                                    {loadingQa && (
+                                        <div className="chat-message chat-msg-assistant">
+                                            <div className="chat-msg-sender">&gt; RESEARCHPILOT AI</div>
+                                            <div className="chat-msg-body" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                <span className="pulse-dot"></span>
+                                                <span>Searching index &amp; generating grounded answer...</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {qaError && (
+                                        <div className="chat-error-banner">
+                                            {qaError}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* IF QUESTIONS HAVE BEEN ASKED: MOVE CHAT INPUT TO THE BOTTOM */}
+                            {chatHistory.length > 0 && (
+                                <div className="workspace-query">
+                                    <label>ASK A QUESTION</label>
+                                    <textarea
+                                        ref={textareaRef}
+                                        value={question}
+                                        onChange={(e) => setQuestion(e.target.value)}
+                                        onKeyDown={handleQuestionKeyDown}
+                                        placeholder={
+                                            isAnalyzing
+                                                ? "Analyzing paper in progress..."
+                                                : isAnalyzed
+                                                ? "> ask anything about methodology, results, equations, or datasets..."
+                                                : "Please wait for paper analysis to complete..."
+                                        }
+                                        disabled={!isAnalyzed || loadingQa || isAnalyzing}
+                                    />
+                                    <div className="workspace-query-hint">
+                                        ENTER TO SEND <br /> SHIFT + ENTER FOR NEW LINE
+                                    </div>
+                                    {isAnalyzed && question.trim() && (
+                                        <button
+                                            onClick={() => handleAskQuestion()}
+                                            disabled={loadingQa}
+                                            style={{ ...actionBtnStyle(loadingQa), marginTop: "0.6rem" }}
+                                        >
+                                            {loadingQa ? "SEARCHING..." : "ASK →"}
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -672,26 +760,21 @@ function Workspace() {
 // SUB-COMPONENTS
 // ─────────────────────────────────────────────────────────────
 
-function GapSection({ title, items }) {
+function GapSection({ title, items, description }) {
     if (!items?.length) return null;
     return (
         <div className="insight-card">
             <h3>{title}</h3>
-            <ul style={{ paddingLeft: "1.2rem", lineHeight: 1.7, fontSize: "0.82rem" }}>
-                {items.map((item, i) => <li key={i}>{item}</li>)}
-            </ul>
-        </div>
-    );
-}
-
-function ExtractSection({ title, items }) {
-    if (!items?.length) return null;
-    return (
-        <div className="insight-card">
-            <h3>{title}</h3>
-            <ul style={{ paddingLeft: "1.2rem", lineHeight: 1.7, fontSize: "0.82rem" }}>
+            {description && (
+                <p style={{ fontSize: "0.72rem", opacity: 0.6, marginBottom: "0.6rem" }}>
+                    {description}
+                </p>
+            )}
+            <ul style={{ paddingLeft: "1.2rem", lineHeight: 1.7, fontSize: "0.82rem", margin: 0 }}>
                 {items.map((item, i) => (
-                    <li key={i}>{typeof item === "object" ? JSON.stringify(item) : item}</li>
+                    <li key={i} style={{ marginBottom: "0.4rem" }}>
+                        {typeof item === "object" ? JSON.stringify(item) : item}
+                    </li>
                 ))}
             </ul>
         </div>
@@ -717,11 +800,12 @@ function actionBtnStyle(disabled) {
 }
 
 const errorStyle = {
-    color: "#f87171",
+    color: "#dc2626",
     fontSize: "0.75rem",
-    background: "rgba(248,113,113,0.1)",
+    background: "rgba(220, 38, 38, 0.08)",
     padding: "0.5rem",
-    border: "1px solid rgba(248,113,113,0.3)",
+    border: "1px solid rgba(220, 38, 38, 0.3)",
+    marginTop: "0.4rem",
 };
 
 export default Workspace;

@@ -1,10 +1,97 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Navbar from "../components/Navbar/Navbar";
 import BackButton from "../components/BackButton/BackButton";
 import { useNavigate, useParams } from "react-router-dom";
 import { addToLibrary, getPaperDetails } from "../lib/api";
+import { Document, Page, pdfjs } from "react-pdf";
 
 import "../styles/pages/paper.css";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
+function FirstPagePreview({ file, title }) {
+    const containerRef = useRef(null);
+    const [pageWidth, setPageWidth] = useState(400);
+    const [loadError, setLoadError] = useState(false);
+
+    useEffect(() => {
+        function updateWidth() {
+            if (!containerRef.current) return;
+            const width = containerRef.current.clientWidth;
+            setPageWidth(Math.max(width - 24, 260));
+        }
+
+        updateWidth();
+        const observer = new ResizeObserver(updateWidth);
+        if (containerRef.current) {
+            observer.observe(containerRef.current);
+        }
+        return () => observer.disconnect();
+    }, []);
+
+    if (!file) {
+        return (
+            <div className="paper-preview-placeholder">
+                <span>NO PDF AVAILABLE</span>
+                <span style={{ fontSize: "12px", opacity: 0.6, marginTop: "8px" }}>
+                    PREVIEW CANNOT BE LOADED
+                </span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="paper-preview-container" ref={containerRef}>
+            <div className="paper-preview-header">
+                <span>PREVIEW · FIRST PAGE</span>
+            </div>
+            <div className="paper-preview-body">
+                <Document
+                    file={file}
+                    onLoadError={(err) => {
+                        console.error("PDF preview error:", err);
+                        setLoadError(true);
+                    }}
+                    loading={
+                        <div className="paper-preview-loading">
+                            LOADING FIRST PAGE...
+                        </div>
+                    }
+                    error={
+                        <div className="paper-preview-error">
+                            <span>COULD NOT RENDER PDF PREVIEW</span>
+                            <span style={{ fontSize: "11px", opacity: 0.6 }}>
+                                {title}
+                            </span>
+                        </div>
+                    }
+                >
+                    {!loadError && (
+                        <>
+                            <Page
+                                pageNumber={1}
+                                width={pageWidth}
+                                renderTextLayer={false}
+                                renderAnnotationLayer={false}
+                            />
+                            {file && (
+                                <object
+                                    data={file}
+                                    type="application/pdf"
+                                    width="100%"
+                                    height="500px"
+                                    style={{ display: "none" }}
+                                >
+                                    <embed src={file} type="application/pdf" />
+                                </object>
+                            )}
+                        </>
+                    )}
+                </Document>
+            </div>
+        </div>
+    );
+}
 
 function Paper() {
     const navigate = useNavigate();
@@ -45,6 +132,8 @@ function Paper() {
         return <main className="paper-page"><Navbar /><p>Paper not found.</p></main>;
     }
 
+    const pdfUrl = paper.pdfUrl ? String(paper.pdfUrl).trim() : null;
+
     return (
         <main className="paper-page">
             <Navbar />
@@ -61,7 +150,6 @@ function Paper() {
 
             <section className="paper-layout">
                 <div className="paper-info">
-                    <div className="paper-number">{paper.id}</div>
                     <h1 className="paper-title">{paper.title}</h1>
 
                     <div className="paper-meta">
@@ -107,11 +195,7 @@ function Paper() {
                 </div>
 
                 <div className="paper-preview">
-                    <div className="paper-preview-placeholder">
-                        PAPER
-                        <br />
-                        PREVIEW
-                    </div>
+                    <FirstPagePreview file={pdfUrl} title={paper.title} />
                 </div>
             </section>
         </main>

@@ -1,15 +1,17 @@
 import "./PaperCard.css";
 import { useNavigate } from "react-router-dom";
 
-function PaperCard({ paper, onOpen, importing, isSimilar, displayId }) {
-
+function PaperCard({ paper, onOpen, importing, isSimilar }) {
     const navigate = useNavigate();
 
     const paperId = paper.id || paper.paper_id;
 
-    const authors = Array.isArray(paper.authors)
-        ? paper.authors.slice(0, 3).join(", ")
-        : "";
+    let authors = "";
+    if (Array.isArray(paper.authors)) {
+        authors = paper.authors.slice(0, 3).join(", ");
+    } else if (typeof paper.authors === "string") {
+        authors = paper.authors;
+    }
 
     function handleOpen() {
         if (onOpen) {
@@ -20,69 +22,43 @@ function PaperCard({ paper, onOpen, importing, isSimilar, displayId }) {
     }
 
     return (
-        <article
-            className={`paper-card ${isSimilar ? "is-similar" : ""}`}
-        >
-
-            {/* SOURCE */}
-            <p className="paper-card-id">
-                {displayId}
-            </p>
-
-            {/* MAIN CONTENT */}
-            <div>
-                <h3 className="paper-card-title">
+        <article className={`paper-card ${isSimilar ? "is-similar" : ""}`}>
+            <div className="paper-card-info">
+                <h1 className="paper-card-title">
                     {paper.title}
-                </h3>
+                </h1>
 
                 <div className="paper-card-meta">
+                    <span>{paper.year || "—"}</span>
 
-                    <span>
-                        {paper.year || "—"}
-                    </span>
+                    <span>|</span>
+
+                    <span>{paper.source || "archive"}</span>
 
                     {authors && (
                         <>
-                            <span className="meta-separator">·</span>
+                            <span>|</span>
                             <span>{authors}</span>
                         </>
                     )}
-
-                    {paper.citation_count != null && (
-                        <>
-                            <span className="meta-separator">·</span>
-                            <span>
-                                {paper.citation_count} CITATIONS
-                            </span>
-                        </>
-                    )}
-
                 </div>
             </div>
 
-            {/* ACTIONS */}
-            {onOpen && (
-                <div className="paper-card-actions">
+            <div className="paper-card-actions">
+                {(paper.has_pdf || paper.pdf_url) && (
+                    <span className="paper-card-pdf">
+                        PDF
+                    </span>
+                )}
 
-                    {paper.has_pdf && (
-                        <span className="paper-card-pdf">
-                            PDF
-                        </span>
-                    )}
-
-                    <button
-                        className="paper-card-action"
-                        onClick={handleOpen}
-                        disabled={importing}
-                    >
-                        {importing
-                            ? "OPENING..."
-                            : "OPEN PAPER →"}
-                    </button>
-
-                </div>
-            )}
-
+                <button
+                    className="paper-card-action"
+                    onClick={handleOpen}
+                    disabled={importing}
+                >
+                    {importing ? "OPENING..." : "OPEN PAPER →"}
+                </button>
+            </div>
         </article>
     );
 }

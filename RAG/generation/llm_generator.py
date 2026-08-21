@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
+from typing import Optional
 
 import requests
+from RAG.settings import settings
 
 
 @dataclass
@@ -18,24 +21,33 @@ class GenerationResult:
 
 class LLMGenerator:
     """
-    Generates grounded answers using a local Ollama model.
+    Generates grounded answers using OpenRouter API or local Ollama model.
 
     The generator does not perform retrieval.
     It only reasons over the context supplied by
     the retrieval pipeline.
     """
 
-    DEFAULT_MODEL = "llama3.2"
+    DEFAULT_MODEL = "meta-llama/llama-3.2-3b-instruct"
 
     def __init__(
         self,
-        model: str = DEFAULT_MODEL,
-        base_url: str = "http://localhost:11434",
+        model: Optional[str] = None,
+        base_url: Optional[str] = None,
         timeout: int = 120,
+        provider: Optional[str] = None,
+        api_key: Optional[str] = None,
     ) -> None:
+        self.provider = (provider or getattr(settings, "LLM_PROVIDER", "openrouter")).lower()
+        self.api_key = api_key or getattr(settings, "OPENROUTER_API_KEY", None) or os.environ.get("OPENROUTER_API_KEY", "")
 
-        self.model = model
-        self.base_url = base_url.rstrip("/")
+        if self.provider == "openrouter":
+            self.model = model or getattr(settings, "OPENROUTER_MODEL", self.DEFAULT_MODEL)
+            self.base_url = "https://openrouter.ai/api/v1"
+        else:
+            self.model = model or getattr(settings, "OLLAMA_MODEL", "llama3.2")
+            self.base_url = (base_url or getattr(settings, "OLLAMA_BASE_URL", "http://localhost:11434")).rstrip("/")
+
         self.timeout = timeout
 
     def generate(
@@ -51,53 +63,88 @@ class LLMGenerator:
         context = context.strip()
 
         if not query:
-            raise ValueError(
-                "Query cannot be empty."
-            )
+            raise ValueError("Query cannot be empty.")
 
         if not context:
-            raise ValueError(
-                "Context cannot be empty."
-            )
+            raise ValueError("Context cannot be empty.")
 
         prompt = self._build_prompt(
             query=query,
             context=context,
         )
 
-        response = requests.post(
-            f"{self.base_url}/api/generate",
-            json={
-                "model": self.model,
-                "prompt": prompt,
-                "stream": False,
-                "options": {
-                    "temperature": 0.1,
-                    "num_predict": 300,
+        if self.provider == "openrouter":
+            if not self.api_key:
+                raise RuntimeError("OPENROUTER_API_KEY is not configured in environment or settings.")
+
+            response = requests.post(
+                f"{self.base_url}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "HTTP-Referer": "https://researchpilot.local",
+                    "X-Title": "ResearchPilot",
+                    "Content-Type": "application/json",
                 },
-            },
-            timeout=self.timeout,
-        )
+                json={
+                    "model": self.model,
+                    "messages": [
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.1,
+                    "max_tokens": 2048,
+                },
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            data = response.json()
 
-        response.raise_for_status()
+            try:
+                answer = data["choices"][0]["message"]["content"].strip()
+            except (KeyError, IndexError, TypeError) as exc:
+                raise RuntimeError(f"OpenRouter returned unexpected response structure: {data}") from exc
 
-        data = response.json()
+            if not answer:
+                raise RuntimeError("OpenRouter returned an empty response.")
 
-        answer = data.get(
-            "response",
-            "",
-        ).strip()
-
-        if not answer:
-            raise RuntimeError(
-                "Ollama returned an empty response."
+            return GenerationResult(
+                query=query,
+                answer=answer,
+                model=self.model,
+            )
+        else:
+            response = requests.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": prompt,
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.1,
+                        "num_predict": 300,
+                    },
+                },
+                timeout=self.timeout,
             )
 
-        return GenerationResult(
-            query=query,
-            answer=answer,
-            model=self.model,
-        )
+            response.raise_for_status()
+
+            data = response.json()
+
+            answer = data.get(
+                "response",
+                "",
+            ).strip()
+
+            if not answer:
+                raise RuntimeError(
+                    "Ollama returned an empty response."
+                )
+
+            return GenerationResult(
+                query=query,
+                answer=answer,
+                model=self.model,
+            )
 
     def _build_prompt(
         self,
@@ -106,9 +153,6 @@ class LLMGenerator:
     ) -> str:
         """
         Build a strict but flexible RAG prompt.
-
-        The model must answer from the supplied context
-        and should directly use relevant facts from it.
         """
 
         return f"""

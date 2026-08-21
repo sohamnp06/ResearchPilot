@@ -8,7 +8,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # ├── .env
 # └── RAG/
 #     └── settings.py
+from dotenv import load_dotenv
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env", override=True)
 
 
 class Settings(BaseSettings):
@@ -26,7 +29,9 @@ class Settings(BaseSettings):
     SEMANTIC_SCHOLAR_API_KEY: Optional[str] = None
     ARXIV_API: str = "https://export.arxiv.org/api/query"
 
-    LLM_PROVIDER: str = "ollama"
+    LLM_PROVIDER: str = "openrouter"
+    OPENROUTER_API_KEY: Optional[str] = None
+    OPENROUTER_MODEL: str = "meta-llama/llama-3.2-3b-instruct"
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "llama3.2"
     OPENAI_API_KEY: Optional[str] = None

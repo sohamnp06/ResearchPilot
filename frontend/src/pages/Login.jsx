@@ -19,7 +19,7 @@ function Login() {
 
     try {
       await loginUser(form);
-      navigate("/search");
+      navigate("/");
     } catch (err) {
       setError(err.message || "Login failed");
     } finally {
