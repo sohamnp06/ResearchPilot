@@ -1,32 +1,87 @@
 import "./PaperCard.css";
-
 import { useNavigate } from "react-router-dom";
 
-function PaperCard({ paper }) {
+function PaperCard({ paper, onOpen, importing, isSimilar, displayId }) {
 
     const navigate = useNavigate();
 
-    function openPaper() {
-        navigate(`/paper/${paper.id}`);
+    const paperId = paper.id || paper.paper_id;
+
+    const authors = Array.isArray(paper.authors)
+        ? paper.authors.slice(0, 3).join(", ")
+        : "";
+
+    function handleOpen() {
+        if (onOpen) {
+            onOpen(paper);
+        } else {
+            navigate(`/paper/${paperId}`);
+        }
     }
 
     return (
         <article
-            className="paper-card"
-            onClick={openPaper}
+            className={`paper-card ${isSimilar ? "is-similar" : ""}`}
         >
 
-            <p>{paper.id}</p>
+            {/* SOURCE */}
+            <p className="paper-card-id">
+                {displayId}
+            </p>
 
-            <h3>{paper.title}</h3>
+            {/* MAIN CONTENT */}
+            <div>
+                <h3 className="paper-card-title">
+                    {paper.title}
+                </h3>
 
-            <span>{paper.year}</span>
+                <div className="paper-card-meta">
 
-            <span>{paper.source}</span>
+                    <span>
+                        {paper.year || "—"}
+                    </span>
 
-            <span className="paper-arrow">
-                →
-            </span>
+                    {authors && (
+                        <>
+                            <span className="meta-separator">·</span>
+                            <span>{authors}</span>
+                        </>
+                    )}
+
+                    {paper.citation_count != null && (
+                        <>
+                            <span className="meta-separator">·</span>
+                            <span>
+                                {paper.citation_count} CITATIONS
+                            </span>
+                        </>
+                    )}
+
+                </div>
+            </div>
+
+            {/* ACTIONS */}
+            {onOpen && (
+                <div className="paper-card-actions">
+
+                    {paper.has_pdf && (
+                        <span className="paper-card-pdf">
+                            PDF
+                        </span>
+                    )}
+
+                    <button
+                        className="paper-card-action"
+                        onClick={handleOpen}
+                        disabled={importing}
+                    >
+                        {importing
+                            ? "OPENING..."
+                            : "OPEN PAPER →"}
+                    </button>
+
+                </div>
+            )}
 
         </article>
     );

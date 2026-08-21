@@ -1,12 +1,13 @@
 .paper-card {
     display: grid;
-    grid-template-columns: 1.15fr 4fr 0.6fr 0.8fr auto;
+
+    grid-template-columns: 150px minmax(0, 1fr) 160px;
+
     align-items: center;
-    column-gap: 28px;
 
-    padding: 34px 0;
+    padding: 32px 0;
 
-    border-top: 1px solid #000;
+    border-top: 1px solid #111;
 
     cursor: pointer;
 
@@ -14,107 +15,195 @@
 }
 
 .paper-card:last-child {
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #111;
 }
 
-/* PAPER ID */
+/* =========================================================
+   SOURCE
+   ========================================================= */
 
-.paper-card p {
-    margin: 0;
+.paper-card-source {
+    align-self: start;
+
+    margin: 4px 0 0;
 
     font-family: "Lexend Exa", sans-serif;
-    font-size: 13px;
-    font-weight: 400;
-    letter-spacing: 0.02em;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+
+    text-transform: uppercase;
 }
 
-/* PAPER TITLE */
+/* =========================================================
+   TITLE
+   ========================================================= */
 
-.paper-card h3 {
+.paper-card-title {
     margin: 0;
 
+    max-width: 900px;
+
     font-family: "Instrument Serif", serif;
-    font-size: 22px;
+    font-size: 25px;
     font-weight: 400;
-    line-height: 1.15;
+    line-height: 1.12;
 
     letter-spacing: -0.01em;
 }
 
-/* YEAR + SOURCE */
+/* =========================================================
+   META
+   ========================================================= */
 
-.paper-card > span:not(.paper-arrow) {
-    margin: 0;
+.paper-card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 9px;
+
+    margin-top: 12px;
 
     font-family: "Lexend Exa", sans-serif;
-    font-size: 12px;
-    font-weight: 400;
+    font-size: 11px;
+    line-height: 1.4;
 
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
 }
 
-/* ARROW */
-
-.paper-arrow {
-    margin: 0;
-
-    font-family: Arial, sans-serif;
-    font-size: 36px;
-    font-weight: 300;
-    line-height: 1;
-
-    text-align: right;
+.meta-separator {
+    opacity: 0.45;
 }
 
-/* HOVER */
+/* =========================================================
+   FOOTER / ACTIONS
+   ========================================================= */
+
+.paper-card-footer {
+    grid-column: 3;
+
+    grid-row: 1 / span 2;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    gap: 20 px;
+}
+
+/* =========================================================
+   PDF
+   ========================================================= */
+
+.paper-card-pdf {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 9px;
+
+    border: 1px solid #E63939;
+
+    color: #E63939;
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   OPEN PAPER
+   ========================================================= */
+
+.paper-card-action {
+    padding: 10px 16px;
+    background: transparent;
+    border: 1px solid #111;
+    color: #111;
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.paper-card-action:hover {
+    background: #111;
+    color: #F7F0E6;
+}
+
+.paper-card-action:disabled {
+    opacity: 0.45;
+    cursor: wait;
+}
+
+/* =========================================================
+   HOVER
+   ========================================================= */
 
 .paper-card:hover {
     padding-left: 8px;
 }
 
-.paper-card:hover .paper-arrow {
-    transform: translateX(6px);
+/* =========================================================
+   SIMILAR PAPERS
+   ========================================================= */
+
+.paper-card.is-similar {
+    padding-top: 28px;
 }
 
-.paper-arrow {
-    transition: transform 0.2s ease;
+/* =========================================================
+   LAST CARD
+   ========================================================= */
+
+.paper-list .paper-card:last-child {
+    border-bottom: 1px solid #111;
 }
 
-/* RESPONSIVE */
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
 
 @media (max-width: 900px) {
     .paper-card {
-        grid-template-columns: 1fr 3fr auto;
-        row-gap: 10px;
+        grid-template-columns: 100px minmax(0, 1fr) 150px;
     }
 
-    .paper-card > span:not(.paper-arrow) {
-        display: none;
-    }
-
-    .paper-card h3 {
-        font-size: 20px;
+    .paper-card-title {
+        font-size: 22px;
     }
 }
 
 @media (max-width: 600px) {
     .paper-card {
         grid-template-columns: 1fr auto;
+        row-gap: 12px;
     }
 
-    .paper-card p {
+    .paper-card-source {
         grid-column: 1;
     }
 
-    .paper-card h3 {
+    .paper-card-title {
         grid-column: 1 / -1;
         grid-row: 2;
 
-        font-size: 24px;
+        font-size: 22px;
     }
 
-    .paper-arrow {
+    .paper-card-meta {
+        grid-column: 1 / -1;
+        grid-row: 3;
+    }
+
+    .paper-card-footer {
         grid-column: 2;
-        grid-row: 1;
+        grid-row: 1 / span 2;
     }
 }

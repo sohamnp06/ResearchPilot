@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar/Navbar";
 import BackButton from "../components/BackButton/BackButton";
 import SortBar from "../components/SortBar/SortBar";
 import { searchPapersExternal, importPaper } from "../lib/api";
+import PaperCard from "../components/PaperCard/PaperCard";
 
 import "../styles/pages/search.css";
 
@@ -99,10 +100,11 @@ function Search() {
                     {/* EXACT / PRIMARY RESULTS */}
                     {results.length > 0 && (
                         <section className="paper-list">
-                            {results.map((paper) => (
-                                <ExternalPaperCard
+                            {results.map((paper,index) => (
+                                <PaperCard
                                     key={paper.paper_id}
                                     paper={paper}
+                                    displayId={`RP-${String(index + 1).padStart(3, "0")}`}
                                     onOpen={handleOpenPaper}
                                     importing={importingId === paper.paper_id}
                                 />
@@ -119,10 +121,11 @@ function Search() {
                             </section>
 
                             <section className="paper-list">
-                                {similarPapers.map((paper) => (
-                                    <ExternalPaperCard
+                                {similarPapers.map((paper,index) => (
+                                    <PaperCard
                                         key={paper.paper_id}
                                         paper={paper}
+                                        displayId={`RP-${String(index + 1).padStart(3, "0")}`}
                                         onOpen={handleOpenPaper}
                                         importing={importingId === paper.paper_id}
                                         isSimilar
@@ -143,58 +146,6 @@ function Search() {
                 </>
             )}
         </main>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────
-// EXTERNAL PAPER CARD (from Semantic Scholar / arXiv)
-// ─────────────────────────────────────────────────────────────
-
-function ExternalPaperCard({ paper, onOpen, importing, isSimilar }) {
-    const authors = Array.isArray(paper.authors)
-        ? paper.authors.slice(0, 3).join(", ")
-        : "";
-
-    return (
-        <article
-            className="paper-card"
-            style={{ cursor: "default" }}
-        >
-            {isSimilar && (
-                <p style={{ fontSize: "0.7rem", opacity: 0.5, marginBottom: "0.25rem" }}>
-                    SIMILAR PAPER
-                </p>
-            )}
-
-            <p>{paper.source || "EXTERNAL"}</p>
-            <h3>{paper.title}</h3>
-
-            <span>{paper.year || "—"}</span>
-            <span>{authors || "Unknown Authors"}</span>
-            {paper.citation_count != null && (
-                <span>{paper.citation_count} CITATIONS</span>
-            )}
-            {paper.has_pdf && (
-                <span style={{ color: "#4ade80", fontSize: "0.7rem" }}>PDF AVAILABLE</span>
-            )}
-
-            <button
-                className="paper-card-action"
-                onClick={() => onOpen(paper)}
-                disabled={importing}
-                style={{
-                    marginTop: "0.75rem",
-                    background: "transparent",
-                    border: "1px solid currentColor",
-                    padding: "0.4rem 1rem",
-                    cursor: importing ? "wait" : "pointer",
-                    fontSize: "0.75rem",
-                    letterSpacing: "0.1em",
-                }}
-            >
-                {importing ? "OPENING..." : "OPEN PAPER →"}
-            </button>
-        </article>
     );
 }
 

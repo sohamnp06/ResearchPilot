@@ -1,25 +1,31 @@
 .search-page {
-    width: min(1100px, 88vw);
-    margin: auto;
-    padding: 36px 0 80px;
+    width: min(1140px, 88vw);
+    margin: 0 auto;
+    padding: 36px 0 100px;
 }
+
+/* =========================================================
+   SEARCH HEADER
+   ========================================================= */
 
 .search-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 
-    margin-top: 60px;
+    margin-top: 58px;
     padding-bottom: 20px;
 
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid var(--border);
 }
 
-/* SEARCH STATUS */
+/* =========================================================
+   SEARCH STATUS
+   ========================================================= */
 
 .search-status {
-    margin-top: 56px;
-    margin-bottom: 48px;
+    margin-top: 42px;
+    margin-bottom: 58px;
 }
 
 .search-status h1 {
@@ -27,21 +33,25 @@
 
     font-family: "Lexend Exa", sans-serif;
     font-size: 22px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-weight: 500;
+    line-height: 1.2;
+
+    letter-spacing: 0.14em;
 }
 
 .search-status p {
     margin: 0;
 
     font-family: "Lexend Exa", sans-serif;
-    font-size: 14px;
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    letter-spacing: 0.1em;
 
     color: #E63939;
 }
 
-/* SEARCHING ANIMATION */
+/* =========================================================
+   SEARCHING ANIMATION
+   ========================================================= */
 
 .search-dots {
     display: inline-block;
@@ -75,7 +85,9 @@
     }
 }
 
-/* RESULTS */
+/* =========================================================
+   RESULTS ANIMATION
+   ========================================================= */
 
 .is-loaded {
     animation: results-enter 0.35s ease-out;

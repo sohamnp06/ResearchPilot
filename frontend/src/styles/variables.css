@@ -1,15 +1,13 @@
-:root{
+:root {
+    --background: #FFF6EA;
+    --text: #000000;
+    --accent: #E63939;
+    --border: #000000;
+    --muted: #5A5A5A;
 
-    --background:#FFF6EA;
+    --container: 1280px;
 
-    --text:#000000;
-
-    --accent:#E63939;
-
-    --border:#000000;
-
-    --muted:#5A5A5A;
-
-    --container:1280px;
-
+    --instrument: "Instrument Serif", serif;
+    --lexend-exa: "Lexend Exa", sans-serif;
+    --jetbrains: "JetBrains Mono", monospace;
 }
