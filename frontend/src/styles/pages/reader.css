@@ -4,73 +4,250 @@
     padding: 36px 0 80px;
 }
 
+
+/* =========================
+   TOOLBAR
+========================= */
+
 .reader-toolbar {
     margin-top: 60px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #000;
 
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
+
+    border-bottom: 1px solid #000;
 }
 
 .reader-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 168px;
+    height: 50px;
+
     background: transparent;
     border: 1px solid #E63939;
 
-    padding: 14px 42px;
-
     font-family: "Lexend Exa", sans-serif;
     font-size: 14px;
-    letter-spacing: .08em;
+    letter-spacing: 0.08em;
 
     cursor: pointer;
+
+    transition: background 0.15s ease;
 }
+
+.reader-upload:hover {
+    background: #E63939;
+    color: #FFF6EA;
+}
+
+
+/* =========================
+   HISTORY
+========================= */
 
 .reading-history {
     border-left: 1px solid #000;
+    border-right: 1px solid #000;
+
     min-height: 800px;
 
     padding: 30px 36px;
 }
 
+
+/* =========================
+   PAPER CARD
+========================= */
+
 .reading-card {
+    min-height: 230px;
+
+    padding: 28px 12px 28px;
+
     border-bottom: 1px solid #000;
 
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
 
-    padding: 0 12px 20px;
+    gap: 40px;
+}
+
+.reading-card:first-child {
+    padding-top: 0;
+}
+
+
+/* =========================
+   PAPER INFO
+========================= */
+
+.reading-info {
+    min-width: 0;
+    flex: 1;
 }
 
 .reading-id {
+    display: block;
+
     font-family: "Lexend Exa", sans-serif;
     font-size: 14px;
-    letter-spacing: .08em;
+    letter-spacing: 0.08em;
+
+    margin-bottom: 8px;
 }
 
 .reading-card h1 {
+    max-width: 850px;
+
     font-family: "Instrument Serif", serif;
     font-size: 40px;
     font-weight: 400;
+    line-height: 1.08;
 
-    margin: 8px 0 22px;
+    margin: 0 0 22px;
 }
 
 .reading-meta {
     display: flex;
-    gap: 20px;
+    gap: 16px;
 
     font-family: "Lexend Exa", sans-serif;
     font-size: 14px;
+    letter-spacing: 0.06em;
 }
 
+
+/* =========================
+   ACTIONS
+========================= */
+
+.reading-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    flex-shrink: 0;
+}
+
+
+/* CONTINUE */
+
 .continue-button {
-    background: none;
-    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 156px;
+    height: 48px;
+
+    padding: 0 20px;
+
+    background: #FFF6EA;
+    color: #000;
+
+    border: 2px solid #E63939;
 
     font-family: "Lexend Exa", sans-serif;
-    font-size: 16px;
+    font-size: 14px;
+    letter-spacing: 0.08em;
 
     cursor: pointer;
+
+    transition: all 0.15s ease;
+}
+
+.continue-button:hover {
+    background: #E63939;
+    border-color: #E63939;
+    color: #FFF6EA;
+}
+
+
+/* REMOVE */
+
+.remove-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 110px;
+    height: 48px;
+
+    padding: 0 16px;
+
+    background: #FFF6EA;
+    color: #000;
+
+    border: 2px solid #000;
+
+    /* box-shadow: 4px 4px 0 #000; */
+
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+}
+
+.remove-button:hover {
+    background: #000;
+    color: #FFF6EA;
+    /* box-shadow: none; */
+}
+
+
+/* =========================
+   MESSAGES
+========================= */
+
+.reader-message {
+    font-family: "Lexend Exa", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+
+    padding: 30px 12px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+    .reading-card {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .reading-actions {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .reader-page {
+        width: 92vw;
+    }
+
+    .reading-history {
+        padding: 24px 20px;
+    }
+
+    .reading-card h1 {
+        font-size: 32px;
+    }
+
+    .reading-meta {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .reading-actions {
+        flex-wrap: wrap;
+    }
 }
