@@ -113,36 +113,38 @@
 
 .library-grid {
     list-style: none;
-
     margin: 0;
     padding: 0;
 
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-
     gap: 28px 24px;
+
+    align-items: start;
 }
 
 .library-card {
     position: relative;
-
-    min-height: 360px;
+    
+    height: 460px;
+    min-height: 0;
 
     display: flex;
     flex-direction: column;
+    /* align-self: start; */
 
     background: #FFF6EA;
     border: 2px solid #000;
 
     /* box-shadow: 8px 8px 0 #000; */
 
-    transition:
-        transform 180ms ease,
+    transition:  transform 180ms ease;
         /* box-shadow 180ms ease; */
 }
 
 .library-card:hover {
-    transform: translate(-3px, -3px);
+    transform: translateY(-3px);
+    /* transform: translate(-3px, -3px); */
     /* box-shadow: 11px 11px 0 #000; */
 }
 
@@ -165,7 +167,9 @@
 } */
 
 .library-paper {
-    min-height: 360px;
+    /* min-height: 360px; */
+    height: 100%;
+    min-height: 0;
 
     padding: 22px;
 
@@ -181,8 +185,9 @@
     gap: 20px;
 
     padding-bottom: 16px;
-
     border-bottom: 1px solid #000;
+
+    flex-shrink: 0;
 }
 
 .library-paper-id {
@@ -203,8 +208,12 @@
 
 .library-paper-body {
     flex: 1;
+    min-height: 0;
 
     padding: 34px 0 30px;
+
+    display: flex;
+    flex-direction: column;
 }
 
 .library-paper-body h2 {
@@ -215,17 +224,19 @@
     font-family: "Instrument Serif", serif;
     font-size: 46px;
     font-weight: 400;
-
     line-height: 0.98;
     letter-spacing: -0.025em;
+
+    overflow: visible;
 }
 
 .library-paper-meta {
     display: flex;
     flex-wrap: wrap;
+
     gap: 10px;
 
-    margin-top: 28px;
+    margin-top: auto;
 
     font-family: "Lexend Exa", sans-serif;
     font-size: 10px;
@@ -244,6 +255,8 @@
     font-family: "Lexend Exa", sans-serif;
     font-size: 9px;
     letter-spacing: 0.1em;
+
+    flex-shrink: 0;
 }
 
 .library-paper-bottom span:first-child {
@@ -252,23 +265,23 @@
 
 .library-card-actions {
     display: flex;
+/* 
+    height: 48px;
+    flex-shrink: 0; */
 
     border-top: 2px solid #000;
+    border-bottom: 0.2px solid #000;
 }
 
 .library-card-actions button {
     flex: 1;
-
+    /* height: 48px; */
     min-height: 48px;
-
     border: 0;
-
     font-family: "Lexend Exa", sans-serif;
     font-size: 10px;
     letter-spacing: 0.1em;
-
     cursor: pointer;
-
     transition:
         background 120ms ease,
         color 120ms ease;
@@ -291,7 +304,7 @@
 }
 
 .library-card-actions button:last-child:hover {
-    background: #000;
+    background: #E63939;
     color: #FFF6EA;
 }
 
@@ -308,6 +321,10 @@
 
     .library-grid {
         grid-template-columns: 1fr;
+    }
+
+    .library-card {
+        height: 460px;
     }
 }
 
