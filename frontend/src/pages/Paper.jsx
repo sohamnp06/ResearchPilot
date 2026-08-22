@@ -153,9 +153,9 @@ function Paper() {
                     <h1 className="paper-title">{paper.title}</h1>
 
                     <div className="paper-meta">
-                        <span>{paper.year}</span>
+                        <span>{paper.displayId || paper.display_id || "PAPER"}</span>
                         <span>|</span>
-                        <span>{paper.source}</span>
+                        <span>{paper.year || "—"}</span>
                     </div>
 
                     <section className="paper-section">

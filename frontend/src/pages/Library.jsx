@@ -101,7 +101,7 @@ function Library() {
                                     <article className="library-paper">
                                         <div className="library-paper-top">
                                             <span className="library-paper-status">
-                                                {paper.source || "PAPER"}
+                                                {paper.displayId || paper.display_id || "PAPER"}
                                             </span>
                                         </div>
 

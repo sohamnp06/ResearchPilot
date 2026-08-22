@@ -111,8 +111,6 @@ def _ensure_reader_progress_schema():
                     )
                 )
 
-            # SQLite can keep a legacy unique index on paper_id only from older schema versions.
-            # If that exists, drop it so each user can track multiple opened papers.
             legacy_indexes = connection.execute(
                 text("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='reader_progress'")
             ).fetchall()
@@ -126,8 +124,43 @@ def _ensure_reader_progress_schema():
             pass
 
 
+def _ensure_paper_display_id_schema():
+    with engine.begin() as connection:
+        try:
+            table_info = connection.execute(text("PRAGMA table_info(papers)")).fetchall()
+            columns = {row[1] for row in table_info}
+
+            if "display_id" not in columns:
+                connection.execute(text("ALTER TABLE papers ADD COLUMN display_id VARCHAR(20)"))
+
+            index_names = connection.execute(
+                text("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='papers'")
+            ).fetchall()
+            index_names = {row[0] for row in index_names}
+
+            if "idx_papers_display_id" not in index_names:
+                connection.execute(
+                    text("CREATE INDEX IF NOT EXISTS idx_papers_display_id ON papers (display_id)")
+                )
+
+            existing_null = connection.execute(
+                text("SELECT id FROM papers WHERE display_id IS NULL ORDER BY created_at ASC, id ASC")
+            ).fetchall()
+
+            if existing_null:
+                for idx, (paper_id,) in enumerate(existing_null, start=1):
+                    display_id = f"RP-{idx:03d}"
+                    connection.execute(
+                        text("UPDATE papers SET display_id = :display_id WHERE id = :paper_id"),
+                        {"display_id": display_id, "paper_id": paper_id},
+                    )
+        except Exception:
+            pass
+
+
 _ensure_library_schema()
 _ensure_reader_progress_schema()
+_ensure_paper_display_id_schema()
 
 SessionLocal = sessionmaker(
     bind=engine,

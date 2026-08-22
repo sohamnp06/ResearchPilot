@@ -354,9 +354,9 @@ function Workspace() {
                     <h1 className="workspace-title">{paper.title}</h1>
 
                     <div className="workspace-meta">
-                        <span>{paper.year || "—"}</span>
+                        <span>{paper.displayId || paper.display_id || "PAPER"}</span>
                         <span>|</span>
-                        <span>{paper.source || "archive"}</span>
+                        <span>{paper.year || "—"}</span>
                     </div>
 
                     <section className="workspace-section">
@@ -677,22 +677,6 @@ function Workspace() {
                                             <div className="chat-msg-body">
                                                 {msg.text}
                                             </div>
-
-                                            {msg.sources && msg.sources.length > 0 && (
-                                                <div className="chat-msg-sources">
-                                                    <span className="sources-label">SOURCES ({msg.sources.length}):</span>
-                                                    {msg.sources.map((src, i) => (
-                                                        <div key={i} className="source-item">
-                                                            <strong>{src.chunk_id}</strong>
-                                                            {src.section && <> · {src.section}</>}
-                                                            {src.page_start != null && <> · P.{src.page_start}</>}
-                                                            <> · score {src.score}</>
-                                                            <br />
-                                                            <span className="source-text">{src.text}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
                                         </div>
                                     ))}
 

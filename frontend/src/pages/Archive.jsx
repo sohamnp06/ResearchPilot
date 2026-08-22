@@ -322,15 +322,14 @@ function Archive() {
                                         </div>
 
                                         <div className="archive-paper-footer">
-                                            <span>
-                                                {paper.source ||
-                                                    "ARCHIVE"}
-                                            </span>
+                                             <span>
+                                                 {paper.displayId || paper.display_id || "DOCUMENT"}
+                                             </span>
 
-                                            <span>
-                                                OPEN →
-                                            </span>
-                                        </div>
+                                             <span>
+                                                 OPEN →
+                                             </span>
+                                         </div>
                                         <div className="archive-paper-reveal">
                                             <div className="archive-reveal-header">
                                                  <span>DOCUMENT</span>

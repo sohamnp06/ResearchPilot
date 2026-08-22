@@ -111,13 +111,13 @@ function Reader() {
 
                                 <div className="reading-meta">
                                     <span>
-                                        {paper.year || "—"}
+                                        {paper.displayId || paper.display_id || "PAPER"}
                                     </span>
 
                                     <span>|</span>
 
                                     <span>
-                                        {paper.source || "local"}
+                                        {paper.year || "—"}
                                     </span>
 
                                     <span>|</span>

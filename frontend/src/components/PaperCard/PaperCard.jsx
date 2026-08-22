@@ -1,7 +1,7 @@
 import "./PaperCard.css";
 import { useNavigate } from "react-router-dom";
 
-function PaperCard({ paper, onOpen, importing, isSimilar }) {
+function PaperCard({ paper, onOpen, importing, isSimilar, displayId }) {
     const navigate = useNavigate();
 
     const paperId = paper.id || paper.paper_id;
@@ -12,6 +12,8 @@ function PaperCard({ paper, onOpen, importing, isSimilar }) {
     } else if (typeof paper.authors === "string") {
         authors = paper.authors;
     }
+
+    const resolvedDisplayId = displayId || paper.displayId || paper.display_id || "PAPER";
 
     function handleOpen() {
         if (onOpen) {
@@ -29,15 +31,16 @@ function PaperCard({ paper, onOpen, importing, isSimilar }) {
                 </h1>
 
                 <div className="paper-card-meta">
+                    <span>{resolvedDisplayId}</span>
+
+                    <span>|</span>
+
                     <span>{paper.year || "—"}</span>
 
                     <span>|</span>
 
-                    <span>{paper.source || "archive"}</span>
-
                     {authors && (
                         <>
-                            <span>|</span>
                             <span>{authors}</span>
                         </>
                     )}

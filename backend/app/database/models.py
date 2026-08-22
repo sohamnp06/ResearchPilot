@@ -57,6 +57,8 @@ class Paper(Base):
 
     status: Mapped[str] = mapped_column(String(50), default="published", nullable=False)
 
+    display_id: Mapped[str | None] = mapped_column(String(20), nullable=True, index=True)
+
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

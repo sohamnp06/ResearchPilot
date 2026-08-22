@@ -211,6 +211,8 @@ async def import_paper(
     if pdf_url:
         pdf_url = str(pdf_url)
 
+    from app.routes.papers import _get_next_display_id
+
     record = Paper(
         id=local_id,
         title=title,
@@ -222,6 +224,7 @@ async def import_paper(
         citation_count=payload.get("citation_count") or 0,
         references=0,
         status="imported",
+        display_id=_get_next_display_id(db),
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
     )
@@ -255,4 +258,5 @@ def _db_paper_to_dict(paper: Paper) -> dict:
         "paperId": paper.id,
         "status": paper.status,
         "filename": paper.filename,
+        "displayId": paper.display_id,
     }

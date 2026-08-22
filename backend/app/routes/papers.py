@@ -59,6 +59,7 @@ def _paper_to_dict(paper: Paper) -> dict:
         "paperId": paper.id,
         "status": paper.status,
         "filename": paper.filename,
+        "displayId": paper.display_id,
         "createdAt": paper.created_at.isoformat() if paper.created_at else None,
         "updatedAt": paper.updated_at.isoformat() if paper.updated_at else None,
     }
@@ -73,6 +74,17 @@ def _note_to_dict(note: PaperNote) -> dict:
         "created_at": note.created_at.isoformat() if note.created_at else None,
         "updated_at": note.updated_at.isoformat() if note.updated_at else None,
     }
+
+
+def _get_next_display_id(db: Session) -> str:
+    max_id = db.query(Paper.display_id).filter(Paper.display_id.is_not(None)).order_by(Paper.display_id.desc()).first()
+    if max_id and max_id[0]:
+        try:
+            num = int(max_id[0].split("-")[-1])
+            return f"RP-{num + 1:03d}"
+        except (ValueError, IndexError):
+            pass
+    return "RP-001"
 
 
 def _seed_demo_papers(db: Session):
@@ -122,6 +134,7 @@ def _seed_demo_papers(db: Session):
                     status=payload["status"],
                     filename=payload["filename"],
                     file_path=str(UPLOAD_DIR / payload["filename"]),
+                    display_id=_get_next_display_id(db),
                     created_at=datetime.now(timezone.utc),
                     updated_at=datetime.now(timezone.utc),
                 )
@@ -219,6 +232,7 @@ async def upload_paper(
         filename=file.filename,
         file_path=str(file_path),
         status="uploaded",
+        display_id=_get_next_display_id(db),
         user_id=current_user.id,
     )
     db.add(record)
