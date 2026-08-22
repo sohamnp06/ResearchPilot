@@ -7,8 +7,9 @@ venv/
 .idea/
 .vscode/
 
-.db
+*.db
 
 data/
+backend/uploads/
 
 *.log

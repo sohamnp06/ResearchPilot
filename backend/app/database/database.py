@@ -13,20 +13,18 @@ def _database_url():
 
 def _build_engine():
     database_url = _database_url()
+
     engine_kwargs = {}
+
     if database_url.startswith("sqlite"):
         engine_kwargs["connect_args"] = {"check_same_thread": False}
-    try:
-        engine = create_engine(database_url, **engine_kwargs)
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
-        return engine
-    except Exception:
-        if database_url.startswith("postgresql"):
-            fallback_url = "sqlite:///./research_assistant.db"
-            engine = create_engine(fallback_url, connect_args={"check_same_thread": False})
-            return engine
-        raise
+
+    engine = create_engine(database_url, **engine_kwargs)
+
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+
+    return engine
 
 
 engine = _build_engine()
